@@ -31,29 +31,34 @@ test.describe('Module 1: Authentication & User Management', () => {
         await loginPage.verifyLoginError();
     });
 
-    test('TC003: New User Registration - Success', async ({ page, registerPage }) => {
+    test('TC003: New User Registration - Success', async ({ page, registerPage, header }) => {
         // 1. Navigate to "Create an Account" link
         await registerPage.navigateToRegister();
 
-
         // Generate unique email
-        const uniqueEmail = `bunny_test_${Date.now()}@example.com`;
-        const password = 'TestUser@123';
+        const timestamp = Date.now();
+        const uniqueEmail = `testuser${timestamp}@example.com`;
+        const firstName = 'test';
+        const lastName = `user${timestamp}`;
+        const password = 'testUser123#';
 
         // 2-5. Fill form and Create
         await registerPage.registerNewUser({
-            firstName: 'Test',
-            lastName: 'User',
+            firstName: firstName,
+            lastName: lastName,
             email: uniqueEmail,
-            password: password
+            password: password,
+            mobile: '9876011223' // From codegen
         });
 
-        // 6. Verify Success
-        await registerPage.verifyRegistrationSuccess();
+        // 6. Verify Success (Welcome Message)
+        // Codegen: await expect(page.getByRole('listitem').filter({ hasText: 'Welcome, test user12!' }).locator('span')).toBeVisible();
+        await header.verifyWelcomeMessage(firstName, lastName);
 
-        // Verify logged in state
-        await expect(page.getByText('Thank you for registering')).toBeVisible();
-        await expect(page.getByRole('link', { name: 'Sign Out' })).toBeVisible();
+        // 7. Sign Out (as per codegen flow)
+        await header.clickSignOut();
+        // After sign out, we should be back on home page or logout success
+        await expect(page).toHaveURL(/https:\/\/www.bunnycart.com\//);
     });
 
     test('TC004: Forgot Password - Email Trigger', async ({ loginPage, page }) => {
