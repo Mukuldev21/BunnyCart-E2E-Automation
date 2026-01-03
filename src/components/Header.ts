@@ -8,26 +8,23 @@ export class Header {
     }
 
     async clickCreateAccount() {
-        await this.page.getByRole('link', { name: 'Create an Account' }).first().click();
+        await this.page.getByRole('link', { name: 'Create an Account' }).click();
     }
 
     async clickSignOut() {
-        // Open the dropdown first
-        await this.page.locator('.customer-name').first().click();
-        await this.page.getByRole('link', { name: 'Sign Out' }).click();
+        // Updated based on codegen: straightforward lookup
+        await this.page.getByText('Sign out').first().click();
     }
 
     async verifyWelcomeMessage(firstName: string, lastName: string) {
-        // Selector found: span.logged-in
-        // We use a regex to be robust against "Default welcome msg" vs "Welcome, Name!"
-        // If name is provided, check for it.
-        const locator = this.page.locator('span.logged-in').first();
-        await locator.waitFor({ state: 'visible' });
-        if (firstName && lastName) {
-            await expect(locator).toHaveText(new RegExp(`Welcome, ${firstName} ${lastName}!`, 'i'));
-        } else {
-            await expect(locator).toContainText('Welcome');
-        }
+        // Updated based on codegen: "Welcome, test user12!" logic
+        // Codegen: await expect(page.getByRole('listitem').filter({ hasText: 'Welcome, test user12!' }).locator('span')).toBeVisible();
+        const expectedText = `Welcome, ${firstName} ${lastName}!`;
+        await expect(
+            this.page.getByRole('listitem')
+                .filter({ hasText: expectedText })
+                .locator('span')
+        ).toBeVisible();
     }
 
     async isSignInLinkVisible(): Promise<boolean> {
