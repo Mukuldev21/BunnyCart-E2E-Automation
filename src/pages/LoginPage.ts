@@ -28,12 +28,19 @@ export class LoginPage {
     }
 
     async clickForgotPassword() {
-        await this.page.locator('.action.remind').click();
+        // Use a more specific locator to differentiate from the 'Checkout using your account' block
+        // Based on the error, scoping to 'Sign In' resolves the ambiguity.
+        await this.page.getByLabel('Sign In').getByText('Forgot Your Password?', { exact: true }).click();
+        await this.page.waitForLoadState('load');
     }
 
     async submitForgotPassword(email: string) {
-        await this.page.getByLabel('Email', { exact: true }).fill(email);
+        // Use Container + Filter pattern to target the correct form (avoiding header/login forms)
+        const form = this.page.locator('form').filter({ has: this.page.getByRole('button', { name: 'Reset My Password' }) });
+
+        await form.getByLabel('Email').fill(email);
         // "Reset My Password" button text might vary, checking generic 'Reset' or the specific text
-        await this.page.getByRole('button', { name: 'Reset My Password' }).click();
+        await form.getByRole('button', { name: 'Reset My Password' }).click();
+        await this.page.waitForLoadState('load');
     }
 }

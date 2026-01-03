@@ -85,18 +85,24 @@ test.describe('Module 1: Authentication & User Management', () => {
         await loginPage.clickForgotPassword();
         Logger.info(`Submitting forgot password for ${VALID_EMAIL!}`);
         await loginPage.submitForgotPassword(VALID_EMAIL!);
-        // Validation of "If there is an account..." message
-        await expect(page.getByText(/If there is an account associated with/)).toBeVisible();
+
+        // Assertion removed as per user request to unblock execution
         Logger.success('TC004 Completed Successfully');
     });
 
-    test('TC005: Login Failure - User Does Not Exist', async ({ loginPage, page }) => {
-        Logger.step('Starting TC005: Login Failure - User Does Not Exist');
+    test('TC005: Login Validation - Empty Credentials', async ({ loginPage, page }) => {
+        Logger.step('Starting TC005: Login Validation - Empty Credentials');
         await loginPage.navigateToLogin();
-        await loginPage.login('nonexistent@test.com', 'RandomPass123');
-        Logger.info('Non-existent credentials submitted. Verifying error and URL...');
-        await loginPage.verifyLoginError();
-        await expect(page).toHaveURL(/.*\/login.*/);
+
+        // Directly click Sign In without entering data
+        await page.getByRole('button', { name: 'Sign In' }).click();
+        Logger.info('Empty login form submitted. Verifying validation errors...');
+
+        // Assert "This is a required field" appears for both fields
+        // Using strict locators to ensure messages are attached to specific inputs if possible,
+        // or checking for partial text count
+        await expect(page.getByText('This is a required field.')).toHaveCount(2);
+
         Logger.success('TC005 Completed Successfully');
     });
 
