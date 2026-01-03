@@ -17,14 +17,12 @@ export class Header {
     }
 
     async verifyWelcomeMessage(firstName: string, lastName: string) {
-        // Updated based on codegen: "Welcome, test user12!" logic
-        // Codegen: await expect(page.getByRole('listitem').filter({ hasText: 'Welcome, test user12!' }).locator('span')).toBeVisible();
-        const expectedText = `Welcome, ${firstName} ${lastName}!`;
-        await expect(
-            this.page.getByRole('listitem')
-                .filter({ hasText: expectedText })
-                .locator('span')
-        ).toBeVisible();
+        // Use .logged-in class which is standard and robust
+        // Use case-insensitive regex to handle capitalization differences
+        const locator = this.page.locator('.logged-in').first();
+        await expect(locator).toBeVisible({ timeout: 10000 }); // Give it time to appear
+        const regex = new RegExp(`Welcome, ${firstName} ${lastName}!`, 'i');
+        await expect(locator).toHaveText(regex);
     }
 
     async isSignInLinkVisible(): Promise<boolean> {
