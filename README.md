@@ -11,7 +11,7 @@ The test suite is built with **Playwright** and **TypeScript**, adhering to the 
 *   **Component Object Model (COM)**: Modular architecture separating page logic from test execution.
 *   **Strict Typing**: Comprehensive TypeScript definitions for all data fixtures and page objects.
 *   **Hybrid Testing Strategy**: Utilizes API calls for data seeding to isolate UI tests and improve execution speed.
-*   **Parallel Execution**: Authorized for fully parallel test runs to minimize feedback loops.
+*   **Touch Reporter**: Custom HTML dashboard providing visual insights and AI-driven analysis.
 *   **Enterprise Standards**: Strictly governed by `AI_TEST_STANDARDS.md` for locator strategies and code quality.
 
 ## Tech Stack
@@ -69,9 +69,17 @@ This project requires a `.env` file in the root directory.
 
 ## Execution
 
-**Run All Tests**
+## Execution
+
+**Recommended: Run & Report**
+Run all tests and automatically open the Touch Reporter dashboard.
 ```bash
-npx playwright test
+npm run test:and:report
+```
+
+**Standard Execution**
+```bash
+npm test
 ```
 
 **Run Specific Module**
@@ -80,8 +88,19 @@ npx playwright test src/tests/auth/
 ```
 
 **Run by Tag**
+Use tags to filter specific test types:
+*   `@smoke`: Critical path tests
+*   `@auth`: Authentication module tests
+*   `@e2e`: End-to-end user flows
+*   `@security`: Security and guard verifications
+
 ```bash
 npx playwright test --grep "@smoke"
+```
+
+**Interactive UI Mode**
+```bash
+npm run test:ui
 ```
 
 **Debug Mode**
@@ -108,13 +127,21 @@ bunnycart/
 
 ## Reporting
 
-HTML reports are generated automatically after each run.
+## Reporting
 
+### Touch Reporter (Custom Dashboard)
+A modern, visual dashboard is generated automatically at `touch-summary.html`.
+
+To view the latest report manually:
 ```bash
-npx playwright show-report
+npm run report
 ```
 
-For detailed execution traces of failed tests, navigate to the `traces` folder within the report.
+### Standard Playwright Report
+For detailed execution traces and deep debugging:
+```bash
+npm run report:standard
+```
 
 ## Documentation
 

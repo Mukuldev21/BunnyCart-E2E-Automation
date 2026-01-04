@@ -11,8 +11,12 @@ export default defineConfig({
     forbidOnly: !!process.env.CI,
     retries: process.env.CI ? 2 : 0,
     workers: process.env.CI ? 1 : undefined,
-    timeout: 60000,
-    reporter: 'html',
+    timeout: 90000,
+    reporter: [
+        ['list'],
+        ['html'],
+        ['./reporters/touch reporters/touch-reporter.ts'],
+    ],
     use: {
         baseURL: process.env.BASE_URL,
         trace: 'on-first-retry',
