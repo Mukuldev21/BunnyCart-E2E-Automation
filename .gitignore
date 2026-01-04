@@ -6,3 +6,5 @@ blob-report
 playwright/.auth
 .DS_Store
 thumbs.db
+touch-summary.html
+touch-dashboard.html
