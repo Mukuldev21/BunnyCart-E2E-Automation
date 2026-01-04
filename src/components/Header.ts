@@ -4,7 +4,7 @@ export class Header {
     constructor(private readonly page: Page) { }
 
     async clickSignIn() {
-        await this.page.getByRole('link', { name: 'Sign In' }).first().click();
+        await this.page.getByRole('link', { name: 'Sign In' }).click();
     }
 
     async clickCreateAccount() {
@@ -26,6 +26,6 @@ export class Header {
     }
 
     async isSignInLinkVisible(): Promise<boolean> {
-        return await this.page.getByRole('link', { name: 'Sign In' }).first().isVisible();
+        return await this.page.getByRole('link', { name: 'Sign In' }).isVisible();
     }
 }
