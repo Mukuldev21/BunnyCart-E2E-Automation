@@ -6,6 +6,7 @@ export interface RegistrationData {
     lastName: string;
     email: string;
     password: string;
+    confirmPassword?: string;
     mobile?: string;
 }
 
@@ -30,7 +31,7 @@ export class RegisterPage {
 
         // Password fields
         await this.page.getByRole('textbox', { name: 'Password*', exact: true }).fill(data.password);
-        await this.page.getByRole('textbox', { name: 'Confirm Password*' }).fill(data.password);
+        await this.page.getByRole('textbox', { name: 'Confirm Password*' }).fill(data.confirmPassword ?? data.password);
 
         // Mobile (if provided, or default dummy)
         const mobile = data.mobile || '9876543210';
