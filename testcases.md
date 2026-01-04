@@ -14,7 +14,7 @@
 | TC007 | Password Validation Rules | Low | UI, Negative | - | 1. Navigate to Create Account<br>2. Enter weak password (e.g., "123")<br>3. Click Create Account | - Validation error under password field alerting requirements (min length, classes) | Pass: 123 |
 | TC008 | Registration - Duplicate Email Validation | High | Functional, Negative | Email already registered | 1. Navigate to Create Account page<br>2. Enter an already registered Email<br>3. Fill other valid details<br>4. Click "Create an Account" | - Error message: "There is already an account with this email address."<br>- User remains on registration page | Email: [ValidUser] |
 | TC009 | Login from Checkout (Guest -> User) | High | Functional | Guest with Item in Cart | 1. Go to Checkout<br>2. Click "Sign In" within Checkout UI<br>3. Enter credentials<br>4. Click Login | - User logged in without losing cart items<br>- Checkout step proceeds with pre-filled address (if any) | - |
-| TC010 | My Account - Address Book | Medium | Functional | Logged In | 1. Go to My Account > Address Book<br>2. Add New Address<br>3. Save Address | - Address saved successfully<br>- Listed as default billing/shipping if selected | Address: [NewAddr] |
+| TC010 | Protected Route Redirection (Auth Guard) | High | Security, Functional | Logged Out | 1. Navigate to `/customer/account/` (Protected URL)<br>2. Verify Redirect to Login<br>3. Login with valid creds<br>4. Verify Redirect back to My Account | - Redirected to Login Page<br>- Redirected back to Protected Page after login | - |
 
 ## Module 2: Product Search & Browse
 **TC Range:** TC011 - TC025
