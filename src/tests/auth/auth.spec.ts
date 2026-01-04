@@ -18,7 +18,7 @@ test.describe('Module 1: Authentication & User Management', () => {
     // ⚠️ DISABLE storage state for this suite to ensure clean authentication flows
     test.use({ storageState: { cookies: [], origins: [] } });
 
-    test('TC001: Registered User Login - Success', async ({ page, loginPage, header }) => {
+    test('TC001: Registered User Login - Success', { tag: ['@auth', '@smoke', '@positive'] }, async ({ page, loginPage, header }) => {
         Logger.step('Starting TC001: Registered User Login');
         Logger.info(`Logging in with ${VALID_EMAIL!}`);
 
@@ -29,7 +29,7 @@ test.describe('Module 1: Authentication & User Management', () => {
         Logger.success('TC001 Completed Successfully');
     });
 
-    test('TC002: Login Failure - Invalid Password', async ({ loginPage }) => {
+    test('TC002: Login Failure - Invalid Password', { tag: ['@auth', '@negative'] }, async ({ loginPage }) => {
         Logger.step('Starting TC002: Login Failure - Invalid Password');
         await loginPage.navigateToLogin();
         await loginPage.login(INVALID_EMAIL!, INVALID_PASSWORD!);
@@ -38,7 +38,7 @@ test.describe('Module 1: Authentication & User Management', () => {
         Logger.success('TC002 Completed Successfully');
     });
 
-    test('TC003: New User Registration - Success', async ({ page, registerPage, header }) => {
+    test('TC003: New User Registration - Success', { tag: ['@auth', '@smoke', '@positive'] }, async ({ page, registerPage, header }) => {
         Logger.step('Starting TC003: New User Registration');
 
         // 1. Navigate to "Create an Account" link
@@ -79,7 +79,7 @@ test.describe('Module 1: Authentication & User Management', () => {
         Logger.success('TC003 Completed Successfully');
     });
 
-    test('TC004: Forgot Password - Email Trigger', async ({ loginPage, page }) => {
+    test('TC004: Forgot Password - Email Trigger', { tag: ['@auth', '@positive'] }, async ({ loginPage, page }) => {
         Logger.step('Starting TC004: Forgot Password');
         await loginPage.navigateToLogin();
         await loginPage.clickForgotPassword();
@@ -90,7 +90,7 @@ test.describe('Module 1: Authentication & User Management', () => {
         Logger.success('TC004 Completed Successfully');
     });
 
-    test('TC005: Login Validation - Empty Credentials', async ({ loginPage, page }) => {
+    test('TC005: Login Validation - Empty Credentials', { tag: ['@auth', '@negative'] }, async ({ loginPage, page }) => {
         Logger.step('Starting TC005: Login Validation - Empty Credentials');
         await loginPage.navigateToLogin();
 
@@ -106,7 +106,7 @@ test.describe('Module 1: Authentication & User Management', () => {
         Logger.success('TC005 Completed Successfully');
     });
 
-    test('TC006: Sign Out Functionality', async ({ loginPage, header, page }) => {
+    test('TC006: Sign Out Functionality', { tag: ['@auth', '@smoke', '@positive'] }, async ({ loginPage, header, page }) => {
         Logger.step('Starting TC006: Sign Out Functionality');
         await loginPage.navigateToLogin();
         await loginPage.login(VALID_EMAIL!, VALID_PASSWORD!);
@@ -120,7 +120,7 @@ test.describe('Module 1: Authentication & User Management', () => {
         Logger.success('TC006 Completed Successfully');
     });
 
-    test('TC007: Password Validation Rules', async ({ registerPage, page }) => {
+    test('TC007: Password Validation Rules', { tag: ['@auth', '@negative'] }, async ({ registerPage, page }) => {
         Logger.step('Starting TC007: Password Validation Rules');
         await registerPage.navigateToRegister();
         Logger.info('Attempting registration with weak password...');
@@ -132,7 +132,7 @@ test.describe('Module 1: Authentication & User Management', () => {
         Logger.success('TC007 Completed Successfully');
     });
 
-    test('TC008: Registration - Duplicate Email Validation', async ({ registerPage, page }) => {
+    test('TC008: Registration - Duplicate Email Validation', { tag: ['@auth', '@negative'] }, async ({ registerPage, page }) => {
         Logger.step('Starting TC008: Registration - Duplicate Email Validation');
         await registerPage.navigateToRegister();
 
@@ -152,7 +152,7 @@ test.describe('Module 1: Authentication & User Management', () => {
         Logger.success('TC008 Completed Successfully');
     });
 
-    test('TC009: Login from Checkout (Guest -> User)', async ({ productPage, page, header }) => {
+    test('TC009: Login from Checkout (Guest -> User)', { tag: ['@auth', '@e2e', '@positive'] }, async ({ productPage, page, header }) => {
         Logger.step('Starting TC009: Login from Checkout');
 
         // 1. Navigate to Home
@@ -202,18 +202,33 @@ test.describe('Module 1: Authentication & User Management', () => {
         Logger.success('TC009 Completed Successfully');
     });
 
-    test('TC010: My Account - Address Book', async ({ loginPage, myAccountPage, page }) => {
-        Logger.step('Starting TC010: My Account - Address Book');
-        await loginPage.navigateToLogin();
+    test('TC010: Protected Route Redirection (Auth Guard)', { tag: ['@auth', '@security', '@positive'] }, async ({ page, loginPage, header }) => {
+        Logger.step('Starting TC010: Protected Route Redirection');
+
+        // 1. Ensure strictly logged out (incognito assumption or manual sign out if needed, but test.use handles clean state)
+        // Access a protected route directly
+        const protectedUrl = 'https://www.bunnycart.com/customer/account/';
+        Logger.info(`Attempting to access protected URL: ${protectedUrl}`);
+        await page.goto(protectedUrl);
+
+        // 2. Verify Redirect to Login
+        // Expect URL to contain 'customer/account/login'
+        await expect(page).toHaveURL(/customer\/account\/login/);
+        Logger.info('Redirected to Login Page as expected.');
+
+        // 3. Perform Login
+        // We are already on the login page, so we just fill and submit
+        Logger.info('Performing login to verify redirect back...');
         await loginPage.login(VALID_EMAIL!, VALID_PASSWORD!);
 
-        await myAccountPage.navigateToAddressBook();
-        Logger.info('Navigated to Address Book. Adding new address...');
-        await myAccountPage.addNewAddress({
-            firstName: 'Test', lastName: 'Addr', phone: '1234567890',
-            street: '123 Tester St', city: 'Test City', zip: '12345', country: 'IN'
-        });
-        await myAccountPage.verifyAddressSaved();
+        // 4. Verify Redirect Back to Protected Page
+        // Use regex to allow for potential trailing slash or /index/ which some frameworks add
+        await expect(page).toHaveURL(/customer\/account\/?(index\/)?/);
+        Logger.success('Successfully redirected back to My Account page.');
+
+        // 5. Verify Content to be sure (Heading)
+        await expect(page.getByRole('heading', { name: 'My Account' })).toBeVisible();
+
         Logger.success('TC010 Completed Successfully');
     });
 
