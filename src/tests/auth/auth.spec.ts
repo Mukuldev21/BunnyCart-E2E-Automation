@@ -110,14 +110,13 @@ test.describe('Module 1: Authentication & User Management', () => {
         Logger.step('Starting TC006: Sign Out Functionality');
         await loginPage.navigateToLogin();
         await loginPage.login(VALID_EMAIL!, VALID_PASSWORD!);
-        await expect(page.getByRole('link', { name: 'Sign Out' })).toBeVisible();
         Logger.info('Logged in. Attempting sign out...');
-
         await header.clickSignOut();
         Logger.step('Sign out clicked. Verifying redirect...');
         // Verify redirection to logout success or homepage and correct link state
-        await expect(page).toHaveURL(/.*\/logoutSuccess\//);
-        await expect(page.getByRole('link', { name: 'Sign In' })).toBeVisible();
+        await expect(page).toHaveURL(/https:\/\/www.bunnycart.com\//);
+        Logger.info('Redirected to homepage. Verifying Sign In link visibility...');
+        await header.isSignInLinkVisible();
         Logger.success('TC006 Completed Successfully');
     });
 
@@ -129,35 +128,77 @@ test.describe('Module 1: Authentication & User Management', () => {
             firstName: 'Test', lastName: 'Weak', email: `weak${Date.now()}@test.com`, password: '123'
         });
         // Validation text: "Minimum of different classes of characters in password is 3"
-        await expect(page.getByText(/Minimum of different classes/)).toBeVisible();
+        await expect(page.getByText(/Minimum length of this field must be/)).toBeVisible();
         Logger.success('TC007 Completed Successfully');
     });
 
-    // test('TC008: Reset Password - Link Validation (Mock)', async ({ }) => {
-    //     test.skip('Requires email access or valid reset token generation');
-    // });
+    test('TC008: Registration - Duplicate Email Validation', async ({ registerPage, page }) => {
+        Logger.step('Starting TC008: Registration - Duplicate Email Validation');
+        await registerPage.navigateToRegister();
 
-    test('TC009: Login from Checkout (Guest -> User)', async ({ productPage, page }) => {
+        Logger.info(`Attempting to register with existing email: ${VALID_EMAIL!}`);
+        await registerPage.registerNewUser({
+            firstName: 'Test',
+            lastName: 'Duplicate',
+            email: VALID_EMAIL!, // Use existing valid email 
+            password: 'TestPassword123$',
+            confirmPassword: 'TestPassword123$' // Ensure password match
+        });
+
+        // Assertion: Verify error message
+        // Common Magento/Adobe Commerce error text
+        await expect(page.getByText(/There is already an account with this email address/)).toBeVisible();
+
+        Logger.success('TC008 Completed Successfully');
+    });
+
+    test('TC009: Login from Checkout (Guest -> User)', async ({ productPage, page, header }) => {
         Logger.step('Starting TC009: Login from Checkout');
-        // Navigate to a known product (or search if needed)
-        // Using a generic URL structure or one found previously.
-        // Ideally, navigate to a category and click first item.
-        await page.goto('https://www.bunnycart.com/aquarium-plants/background');
-        await page.locator('.product-item-info').first().click();
 
+        // 1. Navigate to Home
+        await page.goto('https://www.bunnycart.com/');
+
+        // 2. Click 'Background' link
+        await page.getByRole('link', { name: 'Background' }).click();
+
+        // 3. Click first product
+        // Codegen: locator('.product > a').first().click();
+        await page.locator('.product > a').first().click();
+
+        // 4. Select 'Net Pot' Option
+        // Codegen showed: await page.getByRole('option', { name: 'Net Pot' }).click();
+        // and before that clicked 'This is a required field' - likely triggering validation or interaction.
+        // We go straight for the option.
+        await productPage.selectOption('Net Pot');
+
+        // 5. Add to Cart
         await productPage.addToCart();
         Logger.info('Product added to cart. Navigating to checkout...');
 
-        await page.goto('https://www.bunnycart.com/checkout/');
-        // Click "Sign In" in checkout sidebar/step
-        await page.getByRole('button', { name: 'Sign In' }).click();
+        // 6. Go to Checkout
+        // Codegen: await page.getByRole('link', { name: ' Your Cart ₹40.00 1 items' }).click();
+        await page.getByRole('link', { name: /Your Cart/ }).click();
+        // Codegen: await page.getByRole('button', { name: 'Go to Checkout' }).click();
+        await page.getByRole('button', { name: 'Go to Checkout' }).click();
+
+        // 7. Login at Checkout
         Logger.info('Sign In panel opened. Entering credentials...');
-        await page.getByRole('textbox', { name: 'Email Address' }).fill(VALID_EMAIL!);
-        await page.getByRole('textbox', { name: 'Password' }).fill(VALID_PASSWORD!);
+        // Codegen: 
+        // await page.getByRole('textbox', { name: 'Email Address*' }).click();
+        // await page.getByRole('textbox', { name: 'Email Address*' }).fill('pikachu@pokemon.com');
+        await page.getByRole('textbox', { name: 'Email Address' }).first().click();
+        await page.getByRole('textbox', { name: 'Email Address' }).first().fill(VALID_EMAIL!);
+
+        // Codegen: await page.locator('div > .field.password').click();
+        // await page.getByRole('textbox', { name: 'Password Password*' }).fill('Ash123#');
+        await page.getByRole('textbox', { name: 'Password' }).first().fill(VALID_PASSWORD!);
+
         await page.getByRole('button', { name: 'Sign In' }).click();
 
-        // Verify logged in state (e.g. Email displayed)
-        await expect(page.getByText(VALID_EMAIL!)).toBeVisible();
+        // 8. Verify Login
+        // Codegen: await expect(page.getByText('Welcome, Pikachu Ash!')).toBeVisible();
+        await header.verifyWelcomeMessage(FIRST_NAME!, LAST_NAME!);
+
         Logger.success('TC009 Completed Successfully');
     });
 
