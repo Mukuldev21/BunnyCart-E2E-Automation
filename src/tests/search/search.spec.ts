@@ -17,4 +17,17 @@ test.describe('Module 2: Product Search & Browse', () => {
         await searchResultsPage.verifyProductVisible('Anubias');
     });
 
+    test('TC012: Global Search - No Results', async ({ page, header, searchResultsPage }) => {
+        // ARRANGE
+        await page.goto('/');
+
+        // ACT
+        // Search for a non-existent product
+        await header.searchFor('XylophoneFish');
+
+        // ASSERT
+        // Verify "No results" message is displayed
+        await searchResultsPage.verifyNoResultsMessage('XylophoneFish');
+    });
+
 });
