@@ -4,6 +4,7 @@ import { RegisterPage } from '../pages/RegisterPage';
 import { MyAccountPage } from '../pages/MyAccountPage';
 import { ProductPage } from '../pages/ProductPage';
 import { Header } from '../components/Header';
+import { SearchResultsPage } from '../pages/SearchResultsPage';
 
 type MyFixtures = {
     loginPage: LoginPage;
@@ -11,6 +12,7 @@ type MyFixtures = {
     myAccountPage: MyAccountPage;
     productPage: ProductPage;
     header: Header;
+    searchResultsPage: SearchResultsPage;
 };
 
 export const test = base.extend<MyFixtures>({
@@ -28,6 +30,9 @@ export const test = base.extend<MyFixtures>({
     },
     header: async ({ page }, use) => {
         await use(new Header(page));
+    },
+    searchResultsPage: async ({ page }, use) => {
+        await use(new SearchResultsPage(page));
     },
 });
 
