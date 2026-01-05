@@ -35,4 +35,9 @@ export class Header {
         await searchInput.fill(query);
         await searchInput.press('Enter');
     }
+    async clickCategory(categoryName: string) {
+        // Use exact text match for top-level menu items to avoid ambiguity
+        // Exclude .side-megamenu to avoid duplicates on some resolutions/layouts
+        await this.page.locator('nav.navigation:not(.side-megamenu) a.level-top').filter({ hasText: categoryName }).click();
+    }
 }
