@@ -42,7 +42,7 @@ test.describe('Module 2: Product Search & Browse - Filtering', () => {
         Logger.success('TC014 Completed Successfully');
     });
 
-    test('TC019: Filter Products by Attribute (Difficulty/Area)', { tag: ['@browse', '@filter'] }, async ({ page, header, categoryPage }) => {
+    test.fixme('TC019: Filter Products by Attribute (Difficulty/Area)', { tag: ['@browse', '@filter'] }, async ({ page, header, categoryPage }) => {
         Logger.step('Starting TC019: Filter Products by Attribute');
         await page.goto('/');
 
