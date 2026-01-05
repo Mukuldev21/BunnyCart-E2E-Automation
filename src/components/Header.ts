@@ -28,4 +28,11 @@ export class Header {
     async isSignInLinkVisible(): Promise<boolean> {
         return await this.page.getByRole('link', { name: 'Sign In' }).isVisible();
     }
+
+    async searchFor(query: string) {
+        // Updated based on browser inspection: ID is 'search', placeholder is 'Search...'
+        const searchInput = this.page.locator('#search');
+        await searchInput.fill(query);
+        await searchInput.press('Enter');
+    }
 }
