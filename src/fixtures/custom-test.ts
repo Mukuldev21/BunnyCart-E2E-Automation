@@ -6,38 +6,38 @@ import { ProductPage } from '../pages/ProductPage';
 import { Header } from '../components/Header';
 import { SearchResultsPage } from '../pages/SearchResultsPage';
 import { CategoryPage } from '../pages/CategoryPage';
+import { ProductDetailsPage } from '../pages/ProductDetailsPage';
 
 type MyFixtures = {
+    header: Header;
     loginPage: LoginPage;
     registerPage: RegisterPage;
-    myAccountPage: MyAccountPage;
-    productPage: ProductPage;
-    header: Header;
     searchResultsPage: SearchResultsPage;
     categoryPage: CategoryPage;
+    productDetailsPage: ProductDetailsPage;
 };
 
 export const test = base.extend<MyFixtures>({
+    page: async ({ page }, use) => {
+        await use(page);
+    },
+    header: async ({ page }, use) => {
+        await use(new Header(page));
+    },
     loginPage: async ({ page }, use) => {
         await use(new LoginPage(page));
     },
     registerPage: async ({ page }, use) => {
         await use(new RegisterPage(page));
     },
-    myAccountPage: async ({ page }, use) => {
-        await use(new MyAccountPage(page));
-    },
-    productPage: async ({ page }, use) => {
-        await use(new ProductPage(page));
-    },
-    header: async ({ page }, use) => {
-        await use(new Header(page));
-    },
     searchResultsPage: async ({ page }, use) => {
         await use(new SearchResultsPage(page));
     },
     categoryPage: async ({ page }, use) => {
         await use(new CategoryPage(page));
+    },
+    productDetailsPage: async ({ page }, use) => {
+        await use(new ProductDetailsPage(page));
     },
 });
 
