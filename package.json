@@ -9,7 +9,13 @@
     "test:headed": "npx playwright test --headed",
     "report": "start touch-summary.html",
     "report:standard": "npx playwright show-report",
-    "test:and:report": "npx playwright test || npm run report"
+    "test:and:report": "npx playwright test || npm run report",
+    "test:auth:lt": "npx playwright test src/tests/auth --config=playwright.service.config.ts",
+    "test:browse:lt": "npx playwright test src/tests/browse --config=playwright.service.config.ts",
+    "test:search:lt": "npx playwright test src/tests/search --config=playwright.service.config.ts",
+    "test:module1:lt": "npx playwright test src/tests/auth --config=playwright.service.config.ts",
+    "test:module2:lt": "npx playwright test src/tests/browse src/tests/search --config=playwright.service.config.ts",
+    "test:lt": "npx playwright test --config=playwright.service.config.ts"
   },
   "keywords": [],
   "author": "",
