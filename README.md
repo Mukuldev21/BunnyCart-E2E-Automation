@@ -1,156 +1,184 @@
-# BunnyCart E2E Automation
+# BunnyCart E2E Automation Framework
 
-## Project Overview
+[![Playwright](https://img.shields.io/badge/Playwright-v1.49+-45ba4b?style=for-the-badge&logo=playwright&logoColor=white)](https://playwright.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-v5.0+-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![LambdaTest](https://img.shields.io/badge/LambdaTest-Integreated-blueviolet?style=for-the-badge&logo=lambdatest&logoColor=white)](https://www.lambdatest.com/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
 
-Bunnycart is a leading online aquarium store in India, specializing in high-grade aquarium supplies, fresh aquatic plants, and accessories. This automation framework ensures the reliability and performance of the Bunnycart e-commerce platform (`https://www.bunnycart.com/`), covering critical user flows such as authentication, product search, cart management, and checkout.
+> **Enterprise-grade automation solution for ensuring the reliability and performance of the BunnyCart e-commerce platform.**
 
-The test suite is built with **Playwright** and **TypeScript**, adhering to the **Component Object Model (COM)** architecture for scalability and maintainability.
+---
 
-## Key Features
+## 📋 Project Overview
 
-*   **Component Object Model (COM)**: Modular architecture separating page logic from test execution.
-*   **Strict Typing**: Comprehensive TypeScript definitions for all data fixtures and page objects.
-*   **Hybrid Testing Strategy**: Utilizes API calls for data seeding to isolate UI tests and improve execution speed.
-*   **Touch Reporter**: Custom HTML dashboard providing visual insights and AI-driven analysis.
-*   **Enterprise Standards**: Strictly governed by `AI_TEST_STANDARDS.md` for locator strategies and code quality.
+**BunnyCart** is a premier online store for aquarium supplies. This automation framework is designed to validate critical business flows including **Authentication**, **Product Discovery**, **Checkout**, and **Cart Management** (`https://www.bunnycart.com/`).
 
-## Tech Stack
+Built on **Playwright** and **TypeScript**, the framework adopts the **Component Object Model (COM)** architecture to ensure modularity, scalability, and ease of maintenance across a growing test suite.
 
-*   **Framework**: Playwright
+---
+
+## 🏗️ Architecture
+
+The framework handles interactions through a strictly typed layer of Page Objects and Components, separating test logic from implementation details.
+
+```mermaid
+graph TD
+    A[Test Specifications] -->|Uses| B(Page Objects)
+    A -->|Uses| C(Fixtures)
+    B -->|Composed of| D{Base Page}
+    B -->|Contains| E[Components]
+    E -->|Represents| F(Header/Footer)
+    E -->|Represents| G(Cart/Forms)
+    C -->|Injects| B
+    C -->|Injects| H(API Utilities)
+    H -->|Seeds Data| I((Application))
+```
+
+---
+
+## 🚀 Key Features
+
+| Feature | Description |
+| :--- | :--- |
+| **Component Object Model** | Modular design separating page logic from test scripts. |
+| **Strict Typing** | Comprehensive TypeScript definitions for all pages, fixtures, and data. |
+| **Hybrid Testing** | API-driven data seeding for faster, more reliable UI tests. |
+| **Touch Reporter** | Custom HTML dashboard with visual insights and AI analysis. |
+| **Cloud Execution** | Seamless integration with **LambdaTest** grid. |
+| **Enterprise Standards** | Governed by strictly enforced [AI Test Standards](./AI_TEST_STANDARDS.md). |
+
+---
+
+## 🛠️ Tech Stack
+
+*   **Core Framework**: [Playwright](https://playwright.dev/)
 *   **Language**: TypeScript (Node.js)
-*   **Configuration**: dotenv
+*   **Config Management**: `dotenv`
+*   **Reporting**: Custom Touch Reporter & Playwright HTML
 
-## Prerequisites
+---
+
+## ⚙️ Prerequisites
 
 *   **Node.js**: v18.0.0 or higher
-*   **npm**: Included with Node.js
-*   **VS Code**: Recommended for Playwright integration
+*   **npm**: Bundled with Node.js
+*   **LambdaTest Account**: (Optional) For cloud execution
 
-## Installation
+---
+
+## 📦 Installation
 
 ```bash
-# Clone the repository
+# 1. Clone the repository
 git clone <repository_url>
 cd bunnycart
 
-# Install dependencies
+# 2. Install dependencies
 npm install
 
-# Install Playwright browsers
+# 3. Install Playwright browsers
 npx playwright install
 ```
 
-## Configuration
+---
 
-This project requires a `.env` file in the root directory.
+## 🔧 Configuration
 
-1.  Copy the example file:
+The project is config-driven via `.env`.
+
+1.  **Initialize Config**:
     ```bash
     cp .env.example .env
     ```
 
-2.  Configure your environment variables:
-
-    ```env
-    # Application Config
+2.  **Set Variables** (in `.env`):
+    ```ini
+    # App Config
     BASE_URL="https://www.bunnycart.com/"
     NODE_ENV="test"
 
     # Test Credentials
     BUNNY_EMAIL="<valid_email>"
     BUNNY_PASSWORD="<valid_password>"
-    BUNNY_FIRSTNAME="<firstname>"
-    BUNNY_LASTNAME="<lastname>"
     
-    # Negative Test Data
-    BUNNY_INVALID_EMAIL="<invalid_email>"
-    BUNNY_INVALID_PASSWORD="<invalid_password>"
+    # LambdaTest (Optional)
+    LT_USERNAME="<your_username>"
+    LT_ACCESS_KEY="<your_access_key>"
     ```
 
-## Execution
+---
 
-## Execution
+## ▶️ Execution Strategies
 
-**Recommended: Run & Report**
-Run all tests and automatically open the Touch Reporter dashboard.
-```bash
-npm run test:and:report
-```
+### 🖥️ Local Execution
 
-**Standard Execution**
-```bash
-npm test
-```
+| Command | Description |
+| :--- | :--- |
+| `npm run test:and:report` | **Recommended**: Run all tests & open Touch Reporter. |
+| `npm test` | Standard headless execution. |
+| `npm run test:ui` | Open interactive UI mode. |
+| `npx playwright test --debug` | Run in debug mode. |
 
-**Run Specific Module**
-```bash
-npx playwright test src/tests/auth/
-```
+### ☁️ LambdaTest Execution (Cloud)
 
-**Run by Tag**
-Use tags to filter specific test types:
-*   `@smoke`: Critical path tests
-*   `@auth`: Authentication module tests
-*   `@e2e`: End-to-end user flows
-*   `@security`: Security and guard verifications
+Execute tests on the LambdaTest grid for cross-browser validation.
 
-```bash
-npx playwright test --grep "@smoke"
-```
+| Command | Target Module |
+| :--- | :--- |
+| `npm run test:module1:lt` | **Module 1**: Authentication |
+| `npm run test:module2:lt` | **Module 2**: Product Search & Browse |
+| `npm run test:lt` | **Full Suite**: All Modules |
 
-**Interactive UI Mode**
-```bash
-npm run test:ui
-```
+> **Note**: Cloud test results are visible on your [LambdaTest Automation Dashboard](https://automation.lambdatest.com/build).
 
-**Debug Mode**
-```bash
-npx playwright test --debug
-```
+---
 
-## Project Structure
+## 📊 Reporting
 
-```
-bunnycart/
-├── src/
-│   ├── api/            # API wrappers for hybrid testing
-│   ├── components/     # Shared UI components (Header, Footer, Cart)
-│   ├── fixtures/       # Dependency Injection and test fixtures
-│   ├── pages/          # Page Objects (COM implementation)
-│   └── tests/          # Test specifications
-├── .env                # Environment variables (GitIgnored)
-├── AI_TEST_STANDARDS.md # Engineering standards
-├── playwright.config.ts # Global configuration
-├── testplan.md         # High-level test strategy
-└── testcases.md        # Detailed test case specifications
-```
+The framework generates multiple report formats to suit different needs.
 
-## Reporting
-
-## Reporting
-
-### Touch Reporter (Custom Dashboard)
-A modern, visual dashboard is generated automatically at `touch-summary.html`.
-
-To view the latest report manually:
+### Touch Reporter
+A modern, visual dashboard generated locally at `touch-summary.html`.
 ```bash
 npm run report
 ```
 
-### Standard Playwright Report
-For detailed execution traces and deep debugging:
+### Playwright Standard Report
+Deep-dive trace viewer and execution logs.
 ```bash
 npm run report:standard
 ```
 
-## Documentation
+---
 
-*   **[Test Plan](./testplan.md)**: High-level test strategy and module breakdown.
-*   **[Test Cases](./testcases.md)**: Detailed step-by-step test specifications.
-*   **[AI Test Standards](./AI_TEST_STANDARDS.md)**: Engineering guidelines and best practices.
+## 📂 Project Structure
+
+```bash
+bunnycart/
+├── src/
+│   ├── api/            # API wrappers for hybrid testing
+│   ├── components/     # Reusable UI components (Header, Cart)
+│   ├── fixtures/       # Test fixtures & Dependency Injection
+│   ├── pages/          # Page Objects (COM Implementation)
+│   └── tests/          # Feature-based Test Specs
+├── .env                # Secrets & Config (GitIgnored)
+├── AI_TEST_STANDARDS.md # Engineering Guidelines
+├── playwright.config.ts # Local Configuration
+├── playwright.service.config.ts # LambdaTest Configuration
+└── README.md           # Project Documentation
+```
 
 ---
+
+## 📚 Documentation Links
+
+*   📖 **[Test Plan](./testplan.md)**: Strategy & Scope
+*   🧪 **[Test Cases](./testcases.md)**: Detailed Scenarios
+*   ⚖️ **[Standards](./AI_TEST_STANDARDS.md)**: Coding Guidelines
+
+---
+
 **Strict Compliance**: All contributions must adhere to the guidelines defined in **[AI_TEST_STANDARDS.md](./AI_TEST_STANDARDS.md)**.
 
 ---
-**Created by**:  Mukul Dev Mahato - QA Engineer
+*Created by Mukul Dev Mahato - QA Engineer*
