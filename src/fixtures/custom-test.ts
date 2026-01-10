@@ -14,7 +14,6 @@ type MyFixtures = {
     registerPage: RegisterPage;
     searchResultsPage: SearchResultsPage;
     categoryPage: CategoryPage;
-    categoryPage: CategoryPage;
     productDetailsPage: ProductDetailsPage;
     productPage: ProductPage;
 };
