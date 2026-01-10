@@ -1,4 +1,4 @@
-import { test } from '../../fixtures/custom-test';
+import { test, expect } from '../../fixtures/custom-test';
 
 test.describe('Module 2: Product Search & Browse', () => {
 
@@ -89,6 +89,54 @@ test.describe('Module 2: Product Search & Browse', () => {
         // Verify correct category page loaded
         // The actual category name in breadcrumbs/title is "Foreground Aquatic Plants"
         await categoryPage.verifyCategoryLoaded('Foreground Aquatic Plants');
+    });
+
+    test('TC019: Filter Products by Attribute', async ({ page, categoryPage }) => {
+        // ARRANGE
+        // Navigate to a category with filters (Aquatic Plants)
+        await page.goto('/aquarium-plants');
+
+        // ACT
+        // Filter by "Difficulty" -> "Easy"
+        await categoryPage.filterByAttribute('Difficulty', 'Easy');
+
+        // ASSERT
+        // Verify the filter is active in the "Now Shopping by" section
+        await categoryPage.verifyFilterActive('Difficulty', 'Easy');
+
+        // Check filtering by network or results rather than strict URL param if IDs are involved
+        // But verifying filter active is usually sufficient if it asserts the tag is present
+        // We can just omit the strict URL check or check for *any* query param change if needed
+        // For now, let's rely on verifyFilterActive which checks the UI state
+    });
+
+    test('TC020: Clear All Filters', async ({ page, categoryPage }) => {
+        // ARRANGE
+        // Navigate to a category and apply a filter
+        await page.goto('/aquarium-plants');
+        await categoryPage.filterByAttribute('Difficulty', 'Easy');
+        await categoryPage.verifyFilterActive('Difficulty', 'Easy');
+
+        // ACT
+        // Click Clear All
+        await categoryPage.clearAllFilters();
+
+        // ASSERT
+        // Verify "Now Shopping by" section is gone
+        const activeFilters = page.locator('.filter-current');
+        await expect(activeFilters).toBeHidden();
+
+        // Verify URL is free of the filter param (simple check)
+        await expect(page).not.toHaveURL(/difficulty=/);
+    });
+
+    test('TC021: Verify Default Grid View', async ({ page, categoryPage }) => {
+        // ARRANGE
+        await page.goto('/aquarium-plants');
+
+        // ACT & ASSERT
+        // Verify the default view is Grid
+        await categoryPage.verifyGridView();
     });
 
 });
