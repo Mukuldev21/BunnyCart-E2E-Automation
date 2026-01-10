@@ -42,7 +42,7 @@ graph TD
 | :--- | :--- |
 | **Component Object Model** | Modular design separating page logic from test scripts. |
 | **Strict Typing** | Comprehensive TypeScript definitions for all pages, fixtures, and data. |
-| **Hybrid Testing** | API-driven data seeding for faster, more reliable UI tests. |
+| **Hybrid Testing** | *Planned*: API-driven data seeding for faster, more reliable UI tests. |
 | **Touch Reporter** | Custom HTML dashboard with visual insights and AI analysis. |
 | **Cloud Execution** | Seamless integration with **LambdaTest** grid. |
 | **Enterprise Standards** | Governed by strictly enforced [AI Test Standards](./AI_TEST_STANDARDS.md). |
@@ -156,7 +156,6 @@ npm run report:standard
 ```bash
 bunnycart/
 ├── src/
-│   ├── api/            # API wrappers for hybrid testing
 │   ├── components/     # Reusable UI components (Header, Cart)
 │   ├── fixtures/       # Test fixtures & Dependency Injection
 │   ├── pages/          # Page Objects (COM Implementation)
