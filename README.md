@@ -30,8 +30,6 @@ graph TD
     E -->|Represents| F(Header/Footer)
     E -->|Represents| G(Cart/Forms)
     C -->|Injects| B
-    C -->|Injects| H(API Utilities)
-    H -->|Seeds Data| I((Application))
 ```
 
 ---
