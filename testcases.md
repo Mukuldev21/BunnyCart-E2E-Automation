@@ -31,7 +31,7 @@
 | TC018 | Sub-Category Navigation | Medium | Functional | - | 1. Hover "Aquatic Plants"<br>2. Click "Foreground" sub-category | - Foreground Category page loads<br>- Header title matches "Foreground" | Sub-cat: Foreground |
 | TC019 | Filter Products by Color/Test | Low | Functional | On PLP | 1. Select a secondary filter (e.g., Difficulty/Light) | - Product list updates<br>- URL contains multiple filter params<br>- Filter count matches displayed items | - |
 | TC020 | Clear All Filters | Medium | Functional | Filters applied | 1. Click "Clear All" in "Now Shopping by" section | - All filters removed<br>- Product list resets to default view<br>- URL params removed | - |
-| TC021 | Switch to List View | Low | UI | On PLP (Grid view) | 1. Click "List" view icon | - Layout changes to horizontal list rows<br>- Products show short description inline | - |
+| TC021 | Verify Default Grid View | Low | UI | On PLP | 1. Navigate to Category | - Layout is Grid (.products-grid)<br>- Products displayed in columns | - |
 | TC022 | Sort Products by Price (Low > High) | Medium | Functional | On PLP | 1. Sort By: Price<br>2. Direction: Ascending | - Cheapest products first<br>- Price strictly increasing | Sort: Price Asc |
 | TC023 | Sort Products by Price (High > Low) | Medium | Functional | On PLP | 1. Sort By: Price<br>2. Direction: Descending | - Most expensive products first | Sort: Price Desc |
 | TC024 | Change Items Per Page | Low | Functional | On PLP | 1. Select "24" or "36" from "Show" dropdown | - Page reloads<br>- Number of items matches selection (if inventory allows) | Show: 24 |
