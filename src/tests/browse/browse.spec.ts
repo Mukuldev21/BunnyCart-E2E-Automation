@@ -62,4 +62,33 @@ test.describe('Module 2: Product Search & Browse', () => {
         await productDetailsPage.verifyProductLoaded(targetProduct);
     });
 
+    test('TC017: Pagination - Next Page', async ({ page, categoryPage }) => {
+        // ARRANGE
+        await page.goto('/aquarium-plants');
+
+        // ACT
+        // Navigate to Next Page
+        await categoryPage.navigateToNextPage();
+
+        // ASSERT
+        // Verify we are on Page 2
+        await categoryPage.verifyPageActive(2);
+    });
+
+    test('TC018: Sub-Category Navigation', async ({ page, header, categoryPage }) => {
+        // ARRANGE
+        await page.goto('/');
+
+        // ACT
+        // Hover over "Aquatic Plants" and click "Foreground"
+        // Note: The menu text might be "Foreground Aquatic Plants" or just "Foreground".
+        // Based on inspection, the link title is 'Foreground Aquatic Plants'.
+        await header.hoverAndClickSubCategory('Aquatic Plants', 'Foreground');
+
+        // ASSERT
+        // Verify correct category page loaded
+        // The actual category name in breadcrumbs/title is "Foreground Aquatic Plants"
+        await categoryPage.verifyCategoryLoaded('Foreground Aquatic Plants');
+    });
+
 });
