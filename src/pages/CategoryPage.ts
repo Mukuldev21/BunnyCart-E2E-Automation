@@ -26,7 +26,8 @@ export class CategoryPage {
 
         // Verify Breadcrumbs first as they are always visible
         await expect(this.breadcrumbs).toBeVisible();
-        await expect(this.breadcrumbs).toContainText(`Home ${categoryName}`);
+        await expect(this.breadcrumbs).toContainText('Home');
+        await expect(this.breadcrumbs).toContainText(categoryName);
 
         // Verify Products
         // We expect at least one product
@@ -144,5 +145,36 @@ export class CategoryPage {
         // Ensure it's visible and click
         await expect(productLink.first()).toBeVisible();
         await productLink.first().click();
+    }
+
+    async navigateToNextPage() {
+        // Locator for the "Next" arrow button
+        // Use >> visible=true to target the one currently shown to the user (e.g. bottom pager)
+        const nextButton = this.page.locator('.pages-item-next a.next >> visible=true');
+
+        // Ensure it's visible (if not, we might be on the last page or pagination is missing)
+        await expect(nextButton).toBeVisible();
+
+        // Click and wait for navigation/update
+        // Pagination usually triggers a full reload or partial reload
+        await Promise.all([
+            this.page.waitForLoadState('networkidle'), // Wait for new products to load
+            nextButton.click()
+        ]);
+
+        // Wait for product grid to stabilize
+        await this.productGrid.first().waitFor({ state: 'visible' });
+    }
+
+    async verifyPageActive(pageNumber: number) {
+        // Verify URL contains the page parameter (e.g. ?p=2) or handled via clean URL
+        // BunnyCart standard is usually ?p=2
+        const urlToCheck = `p=${pageNumber}`;
+        await expect(this.page).toHaveURL(new RegExp(urlToCheck));
+
+        // Verify the UI shows the page as current
+        // Verify the UI shows the page as current (target visible pager)
+        const currentPager = this.page.locator('.pages li.item.current .page span').filter({ hasText: pageNumber.toString() }).locator('visible=true');
+        await expect(currentPager).toHaveText(pageNumber.toString());
     }
 }
