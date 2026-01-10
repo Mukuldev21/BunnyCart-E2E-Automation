@@ -40,4 +40,24 @@ export class Header {
         // Exclude .side-megamenu to avoid duplicates on some resolutions/layouts
         await this.page.locator('nav.navigation:not(.side-megamenu) a.level-top').filter({ hasText: categoryName }).click();
     }
+
+    async hoverAndClickSubCategory(mainCategory: string, subCategory: string) {
+        // Find the main category LI to ensure we scope the sub-menu search within it
+        const mainNav = this.page.locator('nav.navigation:not(.side-megamenu) a.level-top').filter({ hasText: mainCategory });
+
+        // Hover to trigger dropdown
+        await mainNav.hover();
+
+        // Wait for sub-menu container to appear (generic wait)
+        // Usually .submenu or .level0.submenu
+
+        // Find the specific sub-category link RELATIVE to the main category, or global if unique
+        // Using a global search for the visible link with that text is often more robust in mega menus
+        // provided the text is unique enough.
+        const subLink = this.page.locator('a.level-top, li.level1 a').filter({ hasText: subCategory }).locator('visible=true');
+
+        // Wait for visibility explicitly
+        await expect(subLink.first()).toBeVisible();
+        await subLink.first().click();
+    }
 }
