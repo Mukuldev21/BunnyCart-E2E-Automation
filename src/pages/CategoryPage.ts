@@ -34,6 +34,37 @@ export class CategoryPage {
         await expect(this.productGrid.first()).toBeVisible();
     }
 
+    async filterByAttribute(filterName: string, optionName: string) {
+        // Locate the specific filter group item container that has the specific title
+        const filterItem = this.page.locator('.filter-options-item').filter({
+            has: this.page.locator('.filter-options-title', { hasText: filterName })
+        });
+
+        // Ensure the filter item exists
+        await expect(filterItem).toBeVisible();
+
+        const titleParams = filterItem.locator('.filter-options-title');
+
+        // Check if expanded, if not click to expand
+        const isExpanded = await titleParams.getAttribute('aria-expanded');
+        if (isExpanded === 'false') {
+            await titleParams.click();
+        }
+
+        // Find the specific option link within this group
+        const optionLink = filterItem.locator('a').filter({ hasText: optionName });
+        await expect(optionLink).toBeVisible();
+
+        // Click and wait for network/grid update
+        await Promise.all([
+            this.page.waitForLoadState('networkidle'),
+            optionLink.click()
+        ]);
+
+        // Wait for product grid to stabilize
+        await this.productGrid.first().waitFor({ state: 'visible' });
+    }
+
     async filterByPrice(min: number, max: number) {
         // Direct URL manipulation for stability with Amasty sliders
         // Example: ?price=0-1000
@@ -75,10 +106,22 @@ export class CategoryPage {
     }
 
     async clearAllFilters() {
-        const clearAll = this.page.locator('.action.clear.filter-clear');
-        if (await clearAll.isVisible()) {
-            await clearAll.click();
-        }
+        // Use visible=true to avoid targeting hidden mobile view duplicates
+        const clearAll = this.page.locator('.action.clear.filter-clear >> visible=true');
+
+        // Ensure it's visible before clicking (assuming we expect filters to be active)
+        await expect(clearAll).toBeVisible();
+
+        await Promise.all([
+            this.page.waitForLoadState('networkidle'), // Wait for reload/update
+            clearAll.click()
+        ]);
+
+        // Wait for the "Now Shopping by" section to disappear or the grid to refresh
+        await expect(this.activeFilters).toBeHidden();
+
+        // Wait for product grid to stabilize
+        await this.productGrid.first().waitFor({ state: 'visible' });
     }
 
     async sortBy(option: string) {
@@ -176,5 +219,18 @@ export class CategoryPage {
         // Verify the UI shows the page as current (target visible pager)
         const currentPager = this.page.locator('.pages li.item.current .page span').filter({ hasText: pageNumber.toString() }).locator('visible=true');
         await expect(currentPager).toHaveText(pageNumber.toString());
+    }
+
+    async verifyGridView() {
+        // Verify the main product wrapper has the grid class
+        const gridContainer = this.page.locator('.products-grid');
+        await expect(gridContainer).toBeVisible();
+
+        // Verify items are displayed
+        await expect(this.productGrid.first()).toBeVisible();
+
+        // Optional: Verify it is NOT list view
+        const listContainer = this.page.locator('.products-list');
+        await expect(listContainer).toBeHidden();
     }
 }
