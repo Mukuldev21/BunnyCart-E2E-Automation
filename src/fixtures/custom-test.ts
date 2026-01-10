@@ -14,7 +14,9 @@ type MyFixtures = {
     registerPage: RegisterPage;
     searchResultsPage: SearchResultsPage;
     categoryPage: CategoryPage;
+    categoryPage: CategoryPage;
     productDetailsPage: ProductDetailsPage;
+    productPage: ProductPage;
 };
 
 export const test = base.extend<MyFixtures>({
@@ -38,6 +40,9 @@ export const test = base.extend<MyFixtures>({
     },
     productDetailsPage: async ({ page }, use) => {
         await use(new ProductDetailsPage(page));
+    },
+    productPage: async ({ page }, use) => {
+        await use(new ProductPage(page));
     },
 });
 
