@@ -155,4 +155,44 @@ test.describe('Module 2: Product Search & Browse', () => {
         await categoryPage.verifyPriceSorting('asc');
     });
 
+    test('TC023: Sort Products by Price (High > Low)', async ({ page, categoryPage }) => {
+        // ARRANGE
+        await page.goto('/aquarium-plants');
+
+        // ACT
+        // 1. Sort by Price (Default is Low > High / Asc)
+        await categoryPage.sortBy('price');
+
+        // 2. Change Direction to Descending (High > Low)
+        await categoryPage.setSortDirection('desc');
+
+        // ASSERT
+        await categoryPage.verifyPriceSorting('desc');
+    });
+
+    test('TC024: Change Items Per Page', async ({ page, categoryPage }) => {
+        // ARRANGE
+        await page.goto('/aquarium-plants');
+
+        // ACT
+        // Change to 40 items per page
+        await categoryPage.changeItemsPerPage(40);
+
+        // ASSERT
+        await categoryPage.verifyItemsPerPage(40);
+    });
+
+    test('TC025: Breadcrumb Navigation Click', async ({ page, categoryPage }) => {
+        // ARRANGE
+        await page.goto('/aquarium-plants');
+
+        // ACT
+        // Click on "Home" breadcrumb
+        await categoryPage.clickBreadcrumb('Home');
+
+        // ASSERT
+        await expect(page).toHaveURL('https://www.bunnycart.com/');
+        await expect(page).toHaveTitle(/Buy Aquatic Plants & Aquarium Fish online/);
+    });
+
 });
