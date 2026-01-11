@@ -1,5 +1,7 @@
 # BunnyCart E2E Automation Framework
 
+![BunnyCart Cover](./image/bunnycart_cover_image.webp)
+
 [![Playwright](https://img.shields.io/badge/Playwright-v1.49+-45ba4b?style=for-the-badge&logo=playwright&logoColor=white)](https://playwright.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-v5.0+-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![LambdaTest](https://img.shields.io/badge/LambdaTest-Integreated-blueviolet?style=for-the-badge&logo=lambdatest&logoColor=white)](https://www.lambdatest.com/)
@@ -21,16 +23,12 @@ Built on **Playwright** and **TypeScript**, the framework adopts the **Component
 
 The framework handles interactions through a strictly typed layer of Page Objects and Components, separating test logic from implementation details.
 
-```mermaid
-graph TD
-    A[Test Specifications] -->|Uses| B(Page Objects)
-    A -->|Uses| C(Fixtures)
-    B -->|Composed of| D{Base Page}
-    B -->|Contains| E[Components]
-    E -->|Represents| F(Header/Footer)
-    E -->|Represents| G(Cart/Forms)
-    C -->|Injects| B
-```
+The framework handles interactions through a strictly typed layer of Page Objects and Components, separating test logic from implementation details.
+
+*   **Test Specifications**: Define the scenarios and utilize Page Objects.
+*   **Fixtures**: Inject Page Objects and reusable components into tests.
+*   **Page Objects**: Encapsulate page logic, composed of Base Pages and Components.
+*   **Components**: Represent reusable UI elements like Headers, Footers, and Carts.
 
 ---
 
@@ -40,7 +38,7 @@ graph TD
 | :--- | :--- |
 | **Component Object Model** | Modular design separating page logic from test scripts. |
 | **Strict Typing** | Comprehensive TypeScript definitions for all pages, fixtures, and data. |
-| **Hybrid Testing** | *Planned*: API-driven data seeding for faster, more reliable UI tests. |
+| **Hybrid Testing** | *Not Implemented*: Currently relying on pure UI interactions (API seeding is planned for future optimization). |
 | **Touch Reporter** | Custom HTML dashboard with visual insights and AI analysis. |
 | **Cloud Execution** | Seamless integration with **LambdaTest** grid. |
 | **Enterprise Standards** | Governed by strictly enforced [AI Test Standards](./AI_TEST_STANDARDS.md). |
