@@ -133,51 +133,64 @@ export class CategoryPage {
         };
         const value = optionMap[option] || option;
 
-        // Clear the product grid to ensure we don't read stale data
-        // This forces us to wait for the grid to re-render
+        // Check if already selected
+        // Use the first visible sorter to ensure we interact with the correct element
+        const sorter = this.page.locator('#sorter').first();
+        const currentSort = await sorter.inputValue();
+        if (currentSort === value) {
+            return;
+        }
+
+        // Clear the product grid to ensure we wait for new content (handling both AJAX and Reload)
         await this.page.evaluate(() => {
             const grid = document.querySelector('.products-grid');
             if (grid) grid.innerHTML = '';
         });
 
-        // Use JS to force the update on ALL sorters (top/bottom)
-        await this.page.evaluate((val) => {
-            const sorters = document.querySelectorAll('#sorter');
-            sorters.forEach(s => {
-                const sorter = s as HTMLSelectElement;
-                sorter.value = val;
-                sorter.dispatchEvent(new Event('change', { bubbles: true }));
-            });
-        }, value);
-
-        // Wait for the URL to update
-        await this.page.waitForURL(/product_list_order=name/, { timeout: 15000 });
+        // Select option
+        await sorter.selectOption(value);
 
         // Wait for the product grid to be repopulated
-        await this.productGrid.first().waitFor({ state: 'visible', timeout: 15000 });
+        await this.productGrid.first().waitFor({ state: 'visible', timeout: 30000 });
+    }
+
+    async verifyPriceSorting(order: 'asc' | 'desc') {
+        // Extract all price texts using the reliable locator
+        const priceTexts = await this.page.locator('.product-item-info [data-price-type="finalPrice"] .price').allTextContents();
+
+        // Parse prices to numbers (remove currency symbols like ₹, $, and commas)
+        const prices = priceTexts.map(t => parseFloat(t.replace(/[^0-9.]/g, '')));
+
+        // Verify we have prices to check
+        expect(prices.length).toBeGreaterThan(0);
+
+        // Check if sorted
+        const sortedPrices = [...prices].sort((a, b) => order === 'asc' ? a - b : b - a);
+        expect(prices).toEqual(sortedPrices);
     }
 
     async verifySorting(order: 'asc' | 'desc') {
         // Use the specific locator for the main grid to avoid duplicates from recommendation blocks
+        // Wait for at least one item
+        await this.page.locator('.products-grid .product-item-link').first().waitFor({ state: 'visible' });
+
         const titles = await this.page.locator('.products-grid .product-item-link').allTextContents();
 
         // Filter out empty strings if any
         const cleanTitles = titles.map(t => t.trim()).filter(t => t.length > 0);
 
-        // Strict alphabetical sort verification is flaky due to backend collation rules
-        // (e.g. handling of quotes, smart quotes, spaces) that differ from JS localeCompare.
-        // Instead, we verify that the sort ACTION worked by checking the first item.
+        // Log first item for debugging
+        console.log(`First item after sorting ${order}: ${cleanTitles[0]}`);
 
-        if (order === 'asc') {
-            // "Acmella repens" should be first for A-Z sort
-            expect(cleanTitles[0]).toContain('Acmella repens');
-        } else {
-            // If we ever test desc sort, check likely Z-A candidate
-            // For now, fail if not A-Z
-        }
+        // Create a copy and sort it consistently (case-insensitive)
+        const sortedTitles = [...cleanTitles].sort((a, b) => {
+            return order === 'asc'
+                ? a.localeCompare(b, undefined, { sensitivity: 'base' })
+                : b.localeCompare(a, undefined, { sensitivity: 'base' });
+        });
 
-        // Verify it's NOT the default sort order (which started with Rotala)
-        expect(cleanTitles[0]).not.toContain('Rotala Wallichii');
+        // Verify equality
+        expect(cleanTitles).toEqual(sortedTitles);
     }
 
     async clickProduct(productName: string) {
