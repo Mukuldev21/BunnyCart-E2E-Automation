@@ -154,9 +154,42 @@ export class CategoryPage {
         await this.productGrid.first().waitFor({ state: 'visible', timeout: 30000 });
     }
 
+    async setSortDirection(direction: 'asc' | 'desc') {
+        // Locator for the switcher icon (first one, usually top toolbar)
+        const switcher = this.page.locator('.sorter-action').first();
+
+        // Check current state via class
+        // 'sort-asc' means currently Ascending (click to make Descending)
+        // 'sort-desc' means currently Descending (click to make Ascending)
+        // Note: The class on the element indicates the CURRENT sort order
+        const className = await switcher.getAttribute('class') || '';
+
+        const isAscending = className.includes('sort-asc');
+        const isDescending = className.includes('sort-desc');
+
+        if (direction === 'asc' && isAscending) return;
+        if (direction === 'desc' && isDescending) return;
+
+        // Clear the product grid to ensure we wait for new content (handling both AJAX and Reload)
+        await this.page.evaluate(() => {
+            const grid = document.querySelector('.products-grid');
+            if (grid) grid.innerHTML = '';
+        });
+
+        // Click to toggle
+        // Use Promise.all to wait for navigation/reload
+        await Promise.all([
+            this.page.waitForNavigation({ waitUntil: 'domcontentloaded' }),
+            switcher.click()
+        ]);
+
+        // Wait for grid stability
+        await this.productGrid.first().waitFor({ state: 'visible', timeout: 15000 });
+    }
+
     async verifyPriceSorting(order: 'asc' | 'desc') {
-        // Extract all price texts using the reliable locator
-        const priceTexts = await this.page.locator('.product-item-info [data-price-type="finalPrice"] .price').allTextContents();
+        // Extract all price texts using the reliable locator, scoped to the main grid
+        const priceTexts = await this.page.locator('.products-grid .product-item-info [data-price-type="finalPrice"] .price').allTextContents();
 
         // Parse prices to numbers (remove currency symbols like ₹, $, and commas)
         const prices = priceTexts.map(t => parseFloat(t.replace(/[^0-9.]/g, '')));
@@ -167,6 +200,36 @@ export class CategoryPage {
         // Check if sorted
         const sortedPrices = [...prices].sort((a, b) => order === 'asc' ? a - b : b - a);
         expect(prices).toEqual(sortedPrices);
+    }
+
+    async changeItemsPerPage(count: number) {
+        const limiter = this.page.locator('select#limiter').first();
+
+        // Check if already selected
+        const currentValue = await limiter.inputValue();
+        if (currentValue === count.toString()) return;
+
+        // Clear grid for robust waiting
+        await this.page.evaluate(() => {
+            const grid = document.querySelector('.products-grid');
+            if (grid) grid.innerHTML = '';
+        });
+
+        await Promise.all([
+            this.page.waitForLoadState('networkidle'),
+            limiter.selectOption(count.toString())
+        ]);
+
+        await this.productGrid.first().waitFor({ state: 'visible', timeout: 30000 });
+    }
+
+    async verifyItemsPerPage(expectedCount: number) {
+        // Verify URL param
+        expect(this.page.url()).toContain(`product_list_limit=${expectedCount}`);
+
+        // Verify dropdown value
+        const limiter = this.page.locator('select#limiter').first();
+        expect(await limiter.inputValue()).toBe(expectedCount.toString());
     }
 
     async verifySorting(order: 'asc' | 'desc') {
@@ -245,5 +308,19 @@ export class CategoryPage {
         // Optional: Verify it is NOT list view
         const listContainer = this.page.locator('.products-list');
         await expect(listContainer).toBeHidden();
+    }
+
+    async clickBreadcrumb(name: string) {
+        // Locate the breadcrumb link with the specific text
+        const breadcrumbLink = this.breadcrumbs.locator('a').filter({ hasText: name });
+
+        // Ensure it's visible
+        await expect(breadcrumbLink).toBeVisible();
+
+        // Click and wait for navigation
+        await Promise.all([
+            this.page.waitForLoadState('networkidle'),
+            breadcrumbLink.click()
+        ]);
     }
 }
