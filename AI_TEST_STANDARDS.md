@@ -530,6 +530,234 @@ npx playwright test tests/auth.spec.ts --grep="TC002" --workers=1
 * Prevents wasting time on multiple broken tests
 * Builds confidence incrementally
 
+---
+
+## 11. INCREMENTAL GENERATION TO AVOID RESPONSE LIMITS
+
+**CRITICAL:** When generating code or test cases, always create content part by part and module wise to prevent exceeding LLM response limits.
+
+### 11.1 Code Generation Strategy
+
+* **Generate ONE module at a time:** When creating Page Objects, Components, or Test specs, focus on a single module (e.g., Authentication) before moving to the next.
+* **Break down large modules:** If a module is complex, generate individual files or classes separately (e.g., first the Page Object, then the Component, then the test spec).
+* **Iterative approach:** After generating each part, verify it works before proceeding to the next.
+* **Example workflow:**
+  1. Generate `LoginPage.ts` for Module 1
+  2. Generate `AuthComponent.ts` if needed
+  3. Generate `auth.spec.ts` test cases
+  4. Move to Module 2 only after Module 1 is complete
+
+### 11.2 Test Cases Generation Strategy (testcases.md)
+
+> [!CAUTION]
+> **NEVER attempt to generate all test cases in a single response.** This WILL exceed LLM token limits and result in incomplete documentation.
+
+**MANDATORY APPROACH: Incremental Module-by-Module Generation**
+
+* **Generate ONE module at a time:** Create test cases for a single functional module (e.g., Module 1: Authentication) before starting the next module.
+* **Wait for confirmation:** After generating each module, STOP and ask the user which module to generate next.
+* **Append to existing file:** When adding new modules, append to the existing `testcases.md` file rather than regenerating the entire file.
+* **Sequential numbering:** Maintain continuous TC IDs (TC001, TC002, etc.) across modules, but generate them incrementally.
+* **Module size limit:** If a module has >15 test cases, break it into sub-modules (e.g., Module 1A, 1B).
+
+**Example workflow:**
+  1. Generate Module 1: Authentication (TC001-TC015)
+  2. **STOP** - Ask user: "Module 1 complete. Which module should I generate next?"
+  3. Generate Module 2: User Management (TC016-TC030)
+  4. **STOP** - Ask user: "Module 2 complete. Which module should I generate next?"
+  5. Continue sequentially until all modules are complete
+
+### 11.3 Incremental testcases.md Generation Workflow
+
+**STEP-BY-STEP PROCESS FOR AGENTS:**
+
+> [!IMPORTANT]
+> **DO NOT use predefined module templates.** Every application is different. You MUST explore the actual application to discover its unique functional modules.
+
+#### Step 0: Application Exploration & Module Discovery
+
+**CRITICAL:** Before creating any test cases, thoroughly explore the application to understand its structure.
+
+**Exploration Process:**
+
+1. **Navigate the Application:**
+   - Open the application in a browser (use browser tools if available)
+   - Click through all navigation menus, tabs, and sections
+   - Identify all major features and user workflows
+   - Note any modals, popups, or dynamic content areas
+
+2. **Identify Functional Areas:**
+   - Look for distinct functional sections (e.g., User Management, Dashboard, Reports, Settings)
+   - Identify common workflows (e.g., Login → Create → Edit → Delete → Logout)
+   - Note any role-based features (Admin vs User features)
+   - Identify integration points (APIs, third-party services)
+
+3. **Map Application Structure:**
+   Create a mental or written map of the application:
+   ```markdown
+   Application: [Name]
+   
+   Main Navigation:
+   - Dashboard (landing page after login)
+   - Patients (list, create, edit, delete)
+   - Appointments (calendar, scheduling)
+   - Reports (generate, view, export)
+   - Settings (profile, preferences, admin)
+   - Logout
+   
+   Authentication:
+   - Login page
+   - Password reset
+   - Session management
+   ```
+
+4. **Define Modules Based on Exploration:**
+   
+   **✅ GOOD - Application-Specific Modules:**
+   ```markdown
+   Based on exploring OpenMRS application:
+   - Module 1: Authentication & Session Management
+   - Module 2: Patient Registration & Search
+   - Module 3: Appointment Scheduling
+   - Module 4: Clinical Visits & Forms
+   - Module 5: Laboratory Orders
+   - Module 6: Reports & Analytics
+   - Module 7: User & Role Management
+   - Module 8: System Settings
+   ```
+   
+   **❌ BAD - Generic Template Modules:**
+   ```markdown
+   Generic modules without exploration:
+   - Module 1: Authentication
+   - Module 2: User Management
+   - Module 3: Dashboard
+   - Module 4: CRUD Operations
+   ```
+
+5. **Estimate Test Case Counts:**
+   For each discovered module, estimate test cases based on:
+   - Number of user actions (create, read, update, delete)
+   - Positive scenarios (happy paths)
+   - Negative scenarios (validation, errors)
+   - Edge cases (boundary conditions)
+   - Security scenarios (authorization, injection)
+   
+   **Example Estimation:**
+   ```markdown
+   Module 2: Patient Registration & Search
+   - Positive: Register new patient (3 scenarios)
+   - Negative: Invalid data validation (4 scenarios)
+   - Search: Find existing patients (3 scenarios)
+   - Edge: Duplicate detection (2 scenarios)
+   - Security: Unauthorized access (2 scenarios)
+   Total: ~14 test cases
+   ```
+
+6. **Prioritize Modules:**
+   Determine which modules are most critical:
+   - **Critical (P0):** Authentication, Core Business Logic
+   - **High (P1):** Primary user workflows
+   - **Medium (P2):** Secondary features
+   - **Low (P3):** Nice-to-have features
+
+**Module Discovery Checklist:**
+
+Before proceeding to test case generation, verify:
+
+- [ ] I have explored the entire application navigation
+- [ ] I have identified all major functional areas
+- [ ] I have mapped user workflows and interactions
+- [ ] I have created application-specific modules (not generic templates)
+- [ ] I have estimated test case counts for each module
+- [ ] I have prioritized modules based on criticality
+- [ ] I have documented any special considerations (APIs, integrations, roles)
+
+#### Step 1: Initial Setup
+1. **Document discovered modules** with estimated test case counts (from Step 0)
+2. **Create module list** with estimated test case counts:
+   ```markdown
+   - Module 1: Authentication (15 test cases)
+   - Module 2: User Management (12 test cases)
+   - Module 3: Dashboard (10 test cases)
+   - Module 4: Reports (8 test cases)
+   ```
+3. **Create testcases.md header** with introduction and module overview table
+
+#### Step 2: Generate First Module
+1. **Generate ONLY Module 1** test cases in the enterprise table format
+2. **Write to testcases.md** with proper markdown formatting
+3. **Verify output** - ensure table is complete and properly formatted
+4. **STOP and ask user:**
+   ```
+   ✅ Module 1: Authentication (TC001-TC015) generated successfully.
+   
+   Next modules to generate:
+   - Module 2: User Management (12 test cases)
+   - Module 3: Dashboard (10 test cases)
+   - Module 4: Reports (8 test cases)
+   
+   Which module should I generate next? (or type 'all' to continue with all remaining modules one by one)
+   ```
+
+#### Step 3: Generate Subsequent Modules
+1. **Read existing testcases.md** to determine the last TC ID used
+2. **Generate next module** starting with the next sequential TC ID
+3. **Append to testcases.md** (do NOT regenerate the entire file)
+4. **STOP and ask user** which module to generate next
+5. **Repeat** until all modules are complete
+
+#### Step 4: Finalize Documentation
+1. **Add test case summary table** at the end of testcases.md
+2. **Verify TC ID continuity** - ensure no gaps or duplicates
+3. **Update testplan.md** to reference the completed testcases.md
+
+#### File Handling Best Practices
+
+**✅ CORRECT - Append to existing file:**
+```typescript
+// When adding Module 2 to existing testcases.md:
+// 1. Read the file to find last TC ID (e.g., TC015)
+// 2. Append new module content starting with TC016
+// 3. Preserve all existing content
+```
+
+**❌ INCORRECT - Regenerate entire file:**
+```typescript
+// DO NOT regenerate the entire testcases.md file
+// This risks losing content and exceeding token limits
+```
+
+#### Module Size Guidelines
+
+| Module Size | Action |
+|-------------|--------|
+| 1-15 test cases | Generate as single module |
+| 16-30 test cases | Consider splitting into 2 sub-modules |
+| 31+ test cases | MUST split into multiple sub-modules (e.g., Module 1A, 1B, 1C) |
+
+#### Progress Tracking Template
+
+Maintain a checklist as you generate modules:
+
+```markdown
+## Test Case Generation Progress
+
+- [x] Module 1: Authentication (TC001-TC015) ✅
+- [x] Module 2: User Management (TC016-TC030) ✅
+- [/] Module 3: Dashboard (TC031-TC045) 🔄 In Progress
+- [ ] Module 4: Reports (TC046-TC055) ⏳ Pending
+- [ ] Module 5: Settings (TC056-TC070) ⏳ Pending
+```
+
+### 11.4 Benefits of Incremental Generation
+
+* **Avoids response limits:** Smaller outputs fit within token limits
+* **Easier review:** Each part can be reviewed and corrected individually
+* **Better quality:** Focus on one module ensures thorough implementation
+* **Reduced errors:** Less chance of cascading issues across modules
+* **User control:** User can prioritize which modules to generate first
+* **Flexibility:** Easy to pause and resume generation process
 
 ---
 
