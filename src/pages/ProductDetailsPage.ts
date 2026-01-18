@@ -55,4 +55,23 @@ export class ProductDetailsPage {
         // Verify Add to Cart button layout
         await expect(this.addToCartButton).toBeVisible();
     }
+
+    async selectOption(optionName: string) {
+        // Select option by name (Semantic: getByRole('option'))
+        // Note: Some Magento setups use divs as swatches, but codegen suggests 'option' role exists.
+        // We will try semantic first, fallback to swatch if needed.
+        const option = this.page.getByRole('option', { name: optionName });
+        await expect(option).toBeVisible();
+        await option.click();
+    }
+
+    async addToCart() {
+        await expect(this.addToCartButton).toBeVisible();
+        await this.addToCartButton.click();
+    }
+
+    async verifySuccessMessage(text: string) {
+        // Dynamic locator for message
+        await expect(this.page.getByText(text)).toBeVisible();
+    }
 }
