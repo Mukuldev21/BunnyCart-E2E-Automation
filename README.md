@@ -41,7 +41,7 @@ The framework handles interactions through a strictly typed layer of Page Object
 | **Hybrid Testing** | *Not Implemented*: Currently relying on pure UI interactions (API seeding is planned for future optimization). |
 | **Touch Reporter** | Custom HTML dashboard with visual insights and AI analysis. |
 | **Cloud Execution** | Seamless integration with **LambdaTest** grid. |
-| **Enterprise Standards** | Governed by strictly enforced [AI Test Standards](./AI_TEST_STANDARDS.md). |
+| **Enterprise Standards** | Governed by strictly enforced [AI Test Standards](./docs/AI_TEST_STANDARDS.md). |
 
 ---
 
@@ -167,13 +167,13 @@ bunnycart/
 
 ## 📚 Documentation Links
 
-*   📖 **[Test Plan](./testplan.md)**: Strategy & Scope
-*   🧪 **[Test Cases](./testcases.md)**: Detailed Scenarios
-*   ⚖️ **[Standards](./AI_TEST_STANDARDS.md)**: Coding Guidelines
+*   📖 **[Test Plan](./docs/testplan.md)**: Strategy & Scope
+*   🧪 **[Test Cases](./docs/testcases.md)**: Detailed Scenarios
+*   ⚖️ **[Standards](./docs/AI_TEST_STANDARDS.md)**: Coding Guidelines
 
 ---
 
-**Strict Compliance**: All contributions must adhere to the guidelines defined in **[AI_TEST_STANDARDS.md](./AI_TEST_STANDARDS.md)**.
+**Strict Compliance**: All contributions must adhere to the guidelines defined in **[AI_TEST_STANDARDS.md](./docs/AI_TEST_STANDARDS.md)**.
 
 ---
 *Created by Mukul Dev Mahato - QA Engineer*
