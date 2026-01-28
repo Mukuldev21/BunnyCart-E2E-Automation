@@ -239,36 +239,41 @@ function Get-AtomicCommitGroups {
             # Playwright Config
             $group.Type = "chore"
             $group.Scope = "config"
-            $group.Message = "$verb test configuration"
+            $fileName = Split-Path $file -Leaf
+            $group.Message = "$verb test configuration ($fileName)"
         }
         elseif ($file -match 'package\.json|package-lock\.json') {
             # Dependencies
             $group.Type = "chore"
             $group.Scope = "deps"
-            $group.Message = "$verb project dependencies"
+            $fileName = Split-Path $file -Leaf
+            $group.Message = "$verb project dependencies ($fileName)"
         }
         elseif ($file -match 'tsconfig') {
             # TS Config
             $group.Type = "chore"
             $group.Scope = "config"
-            $group.Message = "$verb typescript configuration"
+            $fileName = Split-Path $file -Leaf
+            $group.Message = "$verb typescript configuration ($fileName)"
         }
         elseif ($file -match '\.gitignore') {
             # Git Ignore
             $group.Type = "chore"
             $group.Scope = "config"
-            $group.Message = "$verb git exclusions"
+            $fileName = Split-Path $file -Leaf
+            $group.Message = "$verb git exclusions ($fileName)"
         }
         elseif ($file -match '\.env') {
             # Environment
             $group.Type = "chore"
             $group.Scope = "config"
-            $group.Message = "$verb environment variables"
+            $group.Message = "$verb environment variables (.env)"
         }
         elseif ($file -match 'README\.md') {
             # README
             $group.Type = "docs"
-            $group.Message = "$verb project documentation"
+            $fileName = Split-Path $file -Leaf
+            $group.Message = "$verb project documentation ($fileName)"
         }
         elseif ($file -match '\.md$') {
             # Documentation
@@ -280,7 +285,8 @@ function Get-AtomicCommitGroups {
             # Automation Script
             $group.Type = "chore"
             $group.Scope = "workflow"
-            $group.Message = "$verb automation workflow"
+            $fileName = Split-Path $file -Leaf
+            $group.Message = "$verb automation workflow ($fileName)"
         }
         elseif ($file -match '\.ps1$|\.sh$') {
             # Scripts
