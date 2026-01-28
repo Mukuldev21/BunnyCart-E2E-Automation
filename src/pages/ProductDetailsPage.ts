@@ -75,4 +75,84 @@ export class ProductDetailsPage {
         // Use exact: false to allow partial string matches (e.g. "You added" matching "You added X")
         await expect(this.page.getByText(text, { exact: false })).toBeVisible({ timeout: 10000 });
     }
+
+    async verifyValidationError(message: string) {
+        // Validation error usually appears below the field or globally
+        // "This is a required field." is standard Magento error
+        await expect(this.page.getByText(message)).toBeVisible();
+    }
+
+    // Image Gallery Methods
+    async clickThumbnail(index: number) {
+        // Magento Fotorama gallery thumbnails
+        // Using generic locator for resilience, assuming standard gallery structure
+        const thumbnails = this.page.locator('.fotorama__nav__shaft .fotorama__nav__frame--thumb');
+        await expect(thumbnails.nth(index)).toBeVisible();
+        await thumbnails.nth(index).click();
+    }
+
+    async getMainImageSrc(): Promise<string | null> {
+        // Get the source of the currently active main image
+        const activeImage = this.page.locator('.fotorama__stage__frame.fotorama__active .fotorama__img');
+        await expect(activeImage).toBeVisible();
+        return await activeImage.getAttribute('src');
+    }
+
+    async verifyOutOfStock() {
+        // Verify "Out of Stock" text is present in the stock locator
+        await expect(this.productStock).toBeVisible();
+        await expect(this.productStock).toContainText('Out of Stock', { ignoreCase: true });
+
+        // Verify Add to Cart button is NOT visible or is disabled
+        // In Magento, the button is often removed entirely for OOS items
+        // Or it might be present but disabled.
+        // Let's check if it's hidden OR disabled.
+        const isVisible = await this.addToCartButton.isVisible();
+        if (isVisible) {
+            await expect(this.addToCartButton).toBeDisabled();
+        } else {
+            // If not visible, that's also valid for OOS
+            expect(isVisible).toBeFalsy();
+        }
+    }
+
+    async setQuantity(qty: number) {
+        // Locator for Qty input
+        const quantityInput = this.page.locator('#qty');
+        await expect(quantityInput).toBeVisible();
+        await quantityInput.fill(qty.toString());
+    }
+
+    async addToWishlist() {
+        // Locator for Add to Wish List
+        // Often it's an icon with text hidden or visible on hover
+        // Try locating by class or broader text match
+        // .action.towishlist is standard Magento class
+        const wishlistBtn = this.page.locator('.action.towishlist');
+        await expect(wishlistBtn).toBeVisible();
+        await wishlistBtn.click();
+    }
+
+    async addToCompare() {
+        // Locator for Add to Compare
+        // Use :visible to skip hidden instances (e.g. mobile/desktop duplicates)
+        const compareBtn = this.page.locator('.action.compare:visible').first();
+        await expect(compareBtn).toBeVisible();
+        await compareBtn.click();
+    }
+
+    async selectRelatedProduct() {
+        // Locator for related products link
+        // Magento standard: .block.related .product-item-link
+        const relatedProductLink = this.page.locator('.block.related .product-item-link').first();
+
+        // Conditional check - Not all products have related items
+        if (await relatedProductLink.isVisible()) {
+            await relatedProductLink.click();
+            return true;
+        } else {
+            console.log('WARN: No Related Products found');
+            return false;
+        }
+    }
 }

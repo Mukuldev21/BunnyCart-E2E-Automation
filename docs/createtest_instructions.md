@@ -13,7 +13,7 @@ This document enables AI agents to create high-quality, maintainable Playwright 
 
 | Property | Value | Notes |
 |----------|-------|-------|
-| **Test Case ID** | `TC028| From testcases.md |
+| **Test Case ID** | `TC036| From testcases.md |
 | **Reference** | `testcases.md` |
 
 **Example:**
