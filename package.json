@@ -7,15 +7,12 @@
     "test": "npx playwright test",
     "test:ui": "npx playwright test --ui",
     "test:headed": "npx playwright test --headed",
-    "report": "start touch-summary.html",
-    "report:standard": "npx playwright show-report",
+    "report": "npm run open-report",
+    "open-report": "node scripts/open-report.js",
     "test:and:report": "npx playwright test || npm run report",
-    "test:auth:lt": "npx playwright test src/tests/auth --config=playwright.service.config.ts",
-    "test:browse:lt": "npx playwright test src/tests/browse --config=playwright.service.config.ts",
-    "test:search:lt": "npx playwright test src/tests/search --config=playwright.service.config.ts",
-    "test:module1:lt": "npx playwright test src/tests/auth --config=playwright.service.config.ts",
-    "test:module2:lt": "npx playwright test src/tests/browse src/tests/search --config=playwright.service.config.ts",
-    "test:lt": "npx playwright test --config=playwright.service.config.ts"
+    "test:lt:module1": "npx playwright test src/tests/auth --config=playwright.service.config.ts",
+    "test:lt:module2": "npx playwright test src/tests/browse src/tests/search --config=playwright.service.config.ts",
+    "test:lt:full": "npx playwright test --config=playwright.service.config.ts"
   },
   "keywords": [],
   "author": "",
@@ -25,6 +22,7 @@
     "@playwright/test": "^1.57.0",
     "@types/node": "^25.0.3",
     "dotenv": "^17.2.3",
+    "playwright-smart-reporter": "^1.0.5",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
   }
