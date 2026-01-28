@@ -82,4 +82,10 @@ export class Header {
     async clickProceedToCheckout() {
         await this.page.getByRole('button', { name: 'Go to Checkout' }).click();
     }
+
+    async clickViewAndEditCart() {
+        // Click "View and Edit Cart" link in mini-cart dropdown
+        await this.page.getByRole('link', { name: /View and Edit Cart/i }).click();
+        await this.page.waitForLoadState('load', { timeout: 15000 });
+    }
 }
