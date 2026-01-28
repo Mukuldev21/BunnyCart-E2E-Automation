@@ -67,4 +67,45 @@ test.describe('Module 3: Product Details (PDP)', () => {
         console.log('TC027: Test completed successfully');
     });
 
+    test('TC028: Add to Cart - Success', async ({ page, productDetailsPage, header, categoryPage }) => {
+        // ARRANGE
+        console.log('TC028: Starting test - Add to Cart Success');
+
+        // 1. Navigate to PDP of a known product (Hygrophila as per codegen)
+        // Using direct URL for reliability
+        await page.goto('/hygrophila-polysperma-rosanervig');
+        console.log('TC028: Navigated to PDP (Hygrophila)');
+
+        // ACT
+        // 3. Select Options
+        // Mandatory selection as per user feedback/product requirement
+        const option = page.getByRole('option', { name: 'Net Pot' });
+        await expect(option).toBeVisible(); // Explicit wait for stability
+        await option.click();
+        console.log('TC028: Selected Option "Net Pot"');
+
+        // 4. Add to Cart
+        await productDetailsPage.addToCart();
+        console.log('TC028: Clicked Add to Cart');
+
+        // ASSERT
+        // 5. Verify Success Message
+        await productDetailsPage.verifySuccessMessage('You added');
+
+        // 6. Verify Mini-Cart
+        // Wait for cart counter to update (implicit in success message usually, but let's check UI)
+        await expect(page.getByRole('link', { name: /Your Cart/i })).toBeVisible();
+
+        // 7. Click Cart Icon
+        await header.clickCartIcon();
+
+        // 8. Verify Mini-Cart Dropdown
+        await header.verifyMiniCartVisible();
+
+        // 9. Verify Checkout Button
+        await expect(page.getByRole('button', { name: 'Go to Checkout' })).toBeVisible();
+
+        console.log('TC028: Test completed successfully');
+    });
+
 });
