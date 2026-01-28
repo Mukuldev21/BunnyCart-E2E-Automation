@@ -13,8 +13,9 @@ export class CartPage {
         this.cartItems = page.locator('.cart.item');
         // Subtotal in order summary
         this.subtotal = page.locator('.grand.totals .amount .price');
-        // Update cart button
-        this.updateCartButton = page.getByRole('button', { name: /Update Shopping Cart/i });
+        // Update cart button - Relaxed regex with CSS fallback
+        // Magento 2 uses 'action update' class
+        this.updateCartButton = page.locator('button.action.update').or(page.getByRole('button', { name: /Update.*Cart/i }));
         // Page title
         this.pageTitle = page.locator('h1.page-title');
     }
@@ -55,23 +56,53 @@ export class CartPage {
         const item = this.cartItems.filter({ hasText: itemName });
         const qtyInput = item.locator('input.qty');
         await qtyInput.fill(quantity.toString());
+        await qtyInput.press('Enter');
+        await this.page.waitForLoadState('domcontentloaded', { timeout: 15000 });
+    }
+
+    async getSubtotalAmount(): Promise<number> {
+        // Get subtotal as a number
+        const text = await this.subtotal.textContent();
+        // Remove currency symbol and commas, then parse
+        // Assuming format like "₹123.00" or "$123.00"
+        const cleanText = text?.replace(/[^0-9.]/g, '') || '0';
+        return parseFloat(cleanText);
     }
 
     async clickUpdateCart() {
         // Click update cart button
+        await expect(this.updateCartButton).toBeVisible({ timeout: 10000 });
         await this.updateCartButton.click();
-        await this.page.waitForLoadState('load', { timeout: 15000 });
+        await this.page.waitForLoadState('domcontentloaded', { timeout: 15000 });
     }
 
     async removeItem(itemName: string) {
         // Remove specific item from cart
         const item = this.cartItems.filter({ hasText: itemName });
-        const removeButton = item.getByRole('button', { name: /Remove item/i });
+        const removeButton = item.locator('.action.action-delete')
+            .or(item.getByRole('button', { name: /Remove item/i }))
+            .or(item.getByTitle('Remove item'));
+
+        // Handle confirmation dialog if it appears
+        this.page.once('dialog', dialog => {
+            console.log(`Dialog message: ${dialog.message()}`);
+            dialog.accept().catch(() => { });
+        });
+
+        await expect(removeButton).toBeVisible({ timeout: 10000 });
         await removeButton.click();
     }
 
     async verifyEmptyCart() {
         // Verify empty cart message
-        await expect(this.page.getByText(/You have no items in your shopping cart/i)).toBeVisible({ timeout: 10000 });
+        // Use .first() or specific container to avoid strict mode error (minicart vs main page)
+        // Preferring main content if possible, but .first() is sufficient for "visible" check
+        await expect(this.page.locator('.cart-empty').filter({ hasText: /You have no items/i }).first()).toBeVisible({ timeout: 10000 });
+    }
+
+    async verifyItemNotInCart(itemName: string) {
+        // Verify item is NOT visible in cart
+        const item = this.cartItems.filter({ hasText: itemName });
+        await expect(item).toBeHidden({ timeout: 10000 });
     }
 }
