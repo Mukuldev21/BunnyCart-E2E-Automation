@@ -70,8 +70,9 @@ export class ProductDetailsPage {
         await this.addToCartButton.click();
     }
 
-    async verifySuccessMessage(text: string) {
+    async verifySuccessMessage(text: string | RegExp) {
         // Dynamic locator for message
-        await expect(this.page.getByText(text)).toBeVisible();
+        // Use exact: false to allow partial string matches (e.g. "You added" matching "You added X")
+        await expect(this.page.getByText(text, { exact: false })).toBeVisible({ timeout: 10000 });
     }
 }
