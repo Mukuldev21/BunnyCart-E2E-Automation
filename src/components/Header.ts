@@ -60,4 +60,26 @@ export class Header {
         await expect(subLink.first()).toBeVisible();
         await subLink.first().click();
     }
+
+    // Mini-Cart Methods
+    async clickCartIcon() {
+        // "Your Cart" link with item count: "Your Cart ₹40.00 1 items"
+        // Using partial match for robustness
+        const cartLink = this.page.getByRole('link', { name: /Your Cart/i });
+        await expect(cartLink).toBeVisible();
+        await this.page.waitForLoadState('domcontentloaded'); // Ensure DOM is ready
+        await cartLink.click();
+    }
+
+    async verifyMiniCartVisible() {
+        // Verify the mini-cart container is visible
+        // It might take animation time
+        const miniCart = this.page.locator('.minicart-items-wrapper');
+        await expect(miniCart).toBeVisible({ timeout: 10000 });
+        await expect(this.page.getByRole('button', { name: 'Go to Checkout' })).toBeVisible();
+    }
+
+    async clickProceedToCheckout() {
+        await this.page.getByRole('button', { name: 'Go to Checkout' }).click();
+    }
 }
