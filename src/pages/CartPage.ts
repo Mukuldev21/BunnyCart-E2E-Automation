@@ -6,6 +6,7 @@ export class CartPage {
     readonly subtotal: Locator;
     readonly updateCartButton: Locator;
     readonly pageTitle: Locator;
+    readonly proceedToCheckoutButton: Locator;
 
     constructor(page: Page) {
         this.page = page;
@@ -18,6 +19,13 @@ export class CartPage {
         this.updateCartButton = page.locator('button.action.update').or(page.getByRole('button', { name: /Update.*Cart/i }));
         // Page title
         this.pageTitle = page.locator('h1.page-title');
+        // Proceed to Checkout button
+        this.proceedToCheckoutButton = page.getByRole('button', { name: 'Proceed to Checkout' });
+    }
+
+    async proceedToCheckout() {
+        await expect(this.proceedToCheckoutButton).toBeVisible({ timeout: 10000 });
+        await this.proceedToCheckoutButton.click();
     }
 
     async verifyCartPageLoaded() {
