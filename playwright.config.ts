@@ -2,8 +2,11 @@ import { defineConfig, devices } from '@playwright/test';
 import dotenv from 'dotenv';
 import path from 'path';
 
-// Load environment variables from .env file
+// Load environment variables from .env file (for credentials only)
 dotenv.config({ path: path.resolve(__dirname, '.env') });
+
+// Application Configuration
+const BASE_URL = 'https://www.bunnycart.com/';
 
 export default defineConfig({
     testDir: './src/tests',
@@ -14,11 +17,10 @@ export default defineConfig({
     timeout: 90000,
     reporter: [
         ['list'],
-        ['html'],
-        ['./reporters/touch reporters/touch-reporter.ts'],
+        ['./src/reporters/BunnySmartReporter.ts'],
     ],
     use: {
-        baseURL: process.env.BASE_URL,
+        baseURL: BASE_URL,
         trace: 'on-first-retry',
         screenshot: 'only-on-failure',
         video: 'retain-on-failure',
