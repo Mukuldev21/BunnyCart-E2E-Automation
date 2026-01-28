@@ -210,14 +210,14 @@ function Get-AtomicCommitGroups {
             # Page object
             $group.Type = "feat"
             $group.Scope = "pages"
-            $fileName = Split-Path $file -LeafBase
+            $fileName = (Split-Path $file -Leaf) -replace '\.[^.]+$',''
             $group.Message = "$verb $fileName page object"
         }
         elseif ($file -match 'Component\.ts$|/components/') {
             # Component
             $group.Type = "feat"
             $group.Scope = "components"
-            $fileName = Split-Path $file -LeafBase
+            $fileName = (Split-Path $file -Leaf) -replace '\.[^.]+$',''
             $group.Message = "$verb $fileName component"
         }
         elseif ($file -match '/fixtures/') {
@@ -257,6 +257,7 @@ function Get-AtomicCommitGroups {
             # Other
             $group.Type = "chore"
             $fileName = Split-Path $file -Leaf
+            if ([string]::IsNullOrWhiteSpace($fileName)) { $fileName = $file }
             $group.Message = "$verb $fileName"
         }
         
