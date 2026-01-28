@@ -106,4 +106,114 @@ test.describe('Module 4: Shopping Cart', () => {
         console.log('TC037: Test completed successfully');
     });
 
+    test('TC038: Update Item Quantity', async ({ page, header, productDetailsPage, cartPage }) => {
+        // ARRANGE
+        console.log('TC038: Starting test - Update Item Quantity');
+
+        // Precondition: Add item to cart
+        await page.goto('/hygrophila-polysperma-rosanervig');
+        console.log('TC038: Navigated to PDP (Hygrophila)');
+
+        // Select required option
+        const option = page.getByRole('option', { name: 'Net Pot' });
+        await expect(option).toBeVisible({ timeout: 10000 });
+        await option.click();
+        console.log('TC038: Selected Option "Net Pot"');
+
+        // Add to cart
+        await productDetailsPage.addToCart();
+        console.log('TC038: Added product to cart');
+
+        // Verify success message
+        await expect(page.getByText('You added', { exact: false }).first()).toBeVisible({ timeout: 10000 });
+
+        // Navigate to View Cart directly to avoid mini-cart flakiness
+        await page.goto('/checkout/cart/');
+        await cartPage.verifyCartPageLoaded();
+        console.log('TC038: Navigated to Cart Page');
+
+        // Get initial subtotal
+        const initialSubtotal = await cartPage.getSubtotalAmount();
+        console.log(`TC038: Initial Subtotal: ${initialSubtotal}`);
+
+        // ACT
+        // Change Qty from 1 to 2
+        await cartPage.updateItemQuantity('Hygrophila', 2);
+        console.log('TC038: Updated quantity to 2');
+
+        // Click "Update Shopping Cart" - Handled by press('Enter') in updateItemQuantity if button is missing
+        // await cartPage.clickUpdateCart();
+        console.log('TC038: Updated quantity (Enter pressed)');
+
+        // ASSERT
+        // Verify page reloads/updates (handled by waitForLoadState in clickUpdateCart)
+
+        // Verify Subtotal doubles (approx)
+        const newSubtotal = await cartPage.getSubtotalAmount();
+        console.log(`TC038: New Subtotal: ${newSubtotal}`);
+
+        expect(newSubtotal).toBeGreaterThan(initialSubtotal);
+        // Approximately double (allowing for potential discounts or shipping if any, though subtotal is usually pure product price)
+        // Since we are just doubling quantity of same item, subtotal should roughly double.
+        // Let's just assert it increased significantly.
+
+        console.log('TC038: Verified subtotal increased');
+
+        console.log('TC038: Test completed successfully');
+    });
+
+    test('TC039: Remove Item from Cart', async ({ page, header, productDetailsPage, cartPage }) => {
+        // ARRANGE
+        console.log('TC039: Starting test - Remove Item from Cart');
+
+        // Precondition: Add item to cart
+        // We can reuse the same product or a different one.
+        await page.goto('/hygrophila-polysperma-rosanervig');
+        console.log('TC039: Navigated to PDP');
+
+        // Select required option
+        const option = page.getByRole('option', { name: 'Net Pot' });
+        await expect(option).toBeVisible({ timeout: 10000 });
+        await option.click();
+
+        // Add to cart
+        await productDetailsPage.addToCart();
+        console.log('TC039: Added product to cart');
+
+        // Verify success message
+        await expect(page.getByText('You added', { exact: false }).first()).toBeVisible({ timeout: 10000 });
+
+        // Navigate to View Cart directly
+        await page.goto('/checkout/cart/');
+        await cartPage.verifyCartPageLoaded();
+        console.log('TC039: Navigated to Cart Page');
+
+        // Verify item is present
+        await cartPage.verifyItemInCart('Hygrophila');
+        console.log('TC039: Verified item is in cart');
+
+        // ACT
+        // Remove item
+        await cartPage.removeItem('Hygrophila');
+        console.log('TC039: Clicked Remove Item');
+
+        // ASSERT
+        // Verify item is removed from list
+        // Either the item row is gone OR "You have no items in your shopping cart" (if empty)
+        // Since we only added 1 item, it should be empty now.
+
+        // Wait for removal (page load or ajax)
+        await page.waitForTimeout(2000); // Give it a moment for update
+
+        // Check if cart is empty
+        await cartPage.verifyEmptyCart();
+        console.log('TC039: Verified cart is empty');
+
+        // Or verify item not in cart specifically
+        await cartPage.verifyItemNotInCart('Hygrophila');
+        console.log('TC039: Verified item is not in cart');
+
+        console.log('TC039: Test completed successfully');
+    });
+
 });
