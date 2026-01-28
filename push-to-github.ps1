@@ -235,24 +235,52 @@ function Get-AtomicCommitGroups {
             $fileName = Split-Path $file -Leaf
             $group.Message = "$verb $fileName"
         }
-        elseif ($file -match 'playwright\.config|package\.json|tsconfig') {
-            # Config
+        elseif ($file -match 'playwright\.config') {
+            # Playwright Config
             $group.Type = "chore"
             $group.Scope = "config"
-            $fileName = Split-Path $file -Leaf
-            $group.Message = "$verb $fileName"
+            $group.Message = "$verb test configuration"
         }
-        elseif ($file -match '\.env$') {
+        elseif ($file -match 'package\.json|package-lock\.json') {
+            # Dependencies
+            $group.Type = "chore"
+            $group.Scope = "deps"
+            $group.Message = "$verb project dependencies"
+        }
+        elseif ($file -match 'tsconfig') {
+            # TS Config
+            $group.Type = "chore"
+            $group.Scope = "config"
+            $group.Message = "$verb typescript configuration"
+        }
+        elseif ($file -match '\.gitignore') {
+            # Git Ignore
+            $group.Type = "chore"
+            $group.Scope = "config"
+            $group.Message = "$verb git exclusions"
+        }
+        elseif ($file -match '\.env') {
             # Environment
             $group.Type = "chore"
             $group.Scope = "config"
             $group.Message = "$verb environment variables"
+        }
+        elseif ($file -match 'README\.md') {
+            # README
+            $group.Type = "docs"
+            $group.Message = "$verb project documentation"
         }
         elseif ($file -match '\.md$') {
             # Documentation
             $group.Type = "docs"
             $fileName = Split-Path $file -Leaf
             $group.Message = "$verb $fileName"
+        }
+        elseif ($file -match 'push-to-github\.ps1') {
+            # Automation Script
+            $group.Type = "chore"
+            $group.Scope = "workflow"
+            $group.Message = "$verb automation workflow"
         }
         elseif ($file -match '\.ps1$|\.sh$') {
             # Scripts
