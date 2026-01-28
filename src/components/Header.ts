@@ -86,6 +86,6 @@ export class Header {
     async clickViewAndEditCart() {
         // Click "View and Edit Cart" link in mini-cart dropdown
         await this.page.getByRole('link', { name: /View and Edit Cart/i }).click();
-        await this.page.waitForLoadState('load', { timeout: 15000 });
+        await this.page.waitForLoadState('domcontentloaded', { timeout: 15000 });
     }
 }
