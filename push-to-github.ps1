@@ -151,8 +151,9 @@ function Get-AtomicCommitGroups {
         
         # Determine verb based on status
         $verb = "update"
-        if ($status -like "??*" -or $status -like "A*") { $verb = "add" }
-        elseif ($status -like "D*") { $verb = "delete" }
+        if ($status -match '^\?\?|^A') { $verb = "add" }
+        elseif ($status -match '^D|^ D') { $verb = "delete" }
+        elseif ($status -match '^M|^ M|^MM') { $verb = "update" }
         
         $group = @{
             Files = @($file)
