@@ -12,6 +12,13 @@
 #>
 
 # ============================================
+# PARAMETERS
+# ============================================
+param(
+    [switch]$DryRun
+)
+
+# ============================================
 # HELPER FUNCTIONS
 # ============================================
 
@@ -360,6 +367,14 @@ foreach ($group in $commitGroups) {
     $commitNumber++
 }
 Write-Host ""
+
+Write-Host ""
+
+if ($DryRun) {
+    Write-ColorMessage "Dry Run enabled: Stopping before execution." "Warning"
+    Write-Host "  To execute these changes, run without -DryRun" -ForegroundColor Gray
+    exit 0
+}
 
 # Step 7: Perform dry-run check
 $dryRunSuccess = Invoke-DryRun -Branch $currentBranch
