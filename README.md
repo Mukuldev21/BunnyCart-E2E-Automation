@@ -39,7 +39,7 @@ The framework handles interactions through a strictly typed layer of Page Object
 | **Component Object Model** | Modular design separating page logic from test scripts. |
 | **Strict Typing** | Comprehensive TypeScript definitions for all pages, fixtures, and data. |
 | **Hybrid Testing** | *Not Implemented*: Currently relying on pure UI interactions (API seeding is planned for future optimization). |
-| **Touch Reporter** | Custom HTML dashboard with visual insights and AI analysis. |
+| **Smart Reporter** | Custom AI-powered HTML reporting with clear status indicators. |
 | **Cloud Execution** | Seamless integration with **LambdaTest** grid. |
 | **Enterprise Standards** | Governed by strictly enforced [AI Test Standards](./docs/AI_TEST_STANDARDS.md). |
 
@@ -50,7 +50,7 @@ The framework handles interactions through a strictly typed layer of Page Object
 *   **Core Framework**: [Playwright](https://playwright.dev/)
 *   **Language**: TypeScript (Node.js)
 *   **Config Management**: `dotenv`
-*   **Reporting**: Custom Touch Reporter & Playwright HTML
+*   **Reporting**: Playwright Smart Reporter
 
 ---
 
@@ -110,7 +110,8 @@ The project is config-driven via `.env`.
 
 | Command | Description |
 | :--- | :--- |
-| `npm run test:and:report` | **Recommended**: Run all tests & open Touch Reporter. |
+| `npm run report` | **Fastest**: Open existing Smart Reporter (no re-run). |
+| `npm run test:and:report` | Run all tests & open Smart Reporter. |
 | `npm test` | Standard headless execution. |
 | `npm run test:ui` | Open interactive UI mode. |
 | `npx playwright test --debug` | Run in debug mode. |
@@ -121,9 +122,9 @@ Execute tests on the LambdaTest grid for cross-browser validation.
 
 | Command | Target Module |
 | :--- | :--- |
-| `npm run test:module1:lt` | **Module 1**: Authentication |
-| `npm run test:module2:lt` | **Module 2**: Product Search & Browse |
-| `npm run test:lt` | **Full Suite**: All Modules |
+| `npm run test:lt:module1` | **Module 1**: Authentication |
+| `npm run test:lt:module2` | **Module 2**: Product Search & Browse |
+| `npm run test:lt:full` | **Full Suite**: All Modules |
 
 > **Note**: Cloud test results are visible on your [LambdaTest Automation Dashboard](https://automation.lambdatest.com/build).
 
@@ -133,16 +134,10 @@ Execute tests on the LambdaTest grid for cross-browser validation.
 
 The framework generates multiple report formats to suit different needs.
 
-### Touch Reporter
-A modern, visual dashboard generated locally at `touch-summary.html`.
+### Smart Reporter
+A comprehensive HTML report generated at `src/tests/smart-report.html`.
 ```bash
 npm run report
-```
-
-### Playwright Standard Report
-Deep-dive trace viewer and execution logs.
-```bash
-npm run report:standard
 ```
 
 ---
