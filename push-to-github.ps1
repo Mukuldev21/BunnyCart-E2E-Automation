@@ -121,8 +121,17 @@ function Get-ChangedFiles {
     $files = @()
     foreach ($line in $status -split "`n") {
         if ($line.Trim()) {
+            # Parse porcelain format: XY Path
+            # XY are status codes (first char index, second char worktree)
+            $statusCode = $line.Substring(0, 2)
             $filePath = $line.Substring(3).Trim()
-            $files += $filePath
+            
+            # Create custom object with Status and Path
+            $fileObj = [PSCustomObject]@{
+                Status = $statusCode
+                Path = $filePath
+            }
+            $files += $fileObj
         }
     }
     
@@ -136,7 +145,15 @@ function Get-AtomicCommitGroups {
     
     $commitGroups = @()
     
-    foreach ($file in $Files) {
+    foreach ($fileObj in $Files) {
+        $file = $fileObj.Path
+        $status = $fileObj.Status
+        
+        # Determine verb based on status
+        $verb = "update"
+        if ($status -like "??*" -or $status -like "A*") { $verb = "add" }
+        elseif ($status -like "D*") { $verb = "delete" }
+        
         $group = @{
             Files = @($file)
             Type = ""
@@ -157,7 +174,7 @@ function Get-AtomicCommitGroups {
             elseif ($file -match '/checkout/') { $group.Scope = "checkout" }
             else { $group.Scope = "tests" }
             
-            # Extract TC numbers
+            # Extract TC numbers and Title
             $content = Get-Content $file -Raw -ErrorAction SilentlyContinue
             if ($content -match 'TC\d+') {
                 $tcNumbers = @()
@@ -167,17 +184,26 @@ function Get-AtomicCommitGroups {
                 }
                 $uniqueTCs = $tcNumbers | Select-Object -Unique | Sort-Object
                 
+                # Check for Test Title pattern: test('TC038: Update Item Quantity', ...)
+                # Use the first match found
+                $titleMatch = [regex]::Match($content, "test\(['`"]TC\d+:\s*(.*?)['`"]")
+                $testTitle = if ($titleMatch.Success) { $titleMatch.Groups[1].Value } else { "" }
+
                 if ($uniqueTCs.Count -eq 1) {
-                    $group.Message = "add TC$($uniqueTCs[0]) test case"
+                    if ($testTitle) {
+                        $group.Message = "TC$($uniqueTCs[0]) - $testTitle"
+                    } else {
+                        $group.Message = "$verb TC$($uniqueTCs[0]) test case"
+                    }
                 }
                 else {
                     $tcList = ($uniqueTCs | ForEach-Object { "TC$_" }) -join ", "
-                    $group.Message = "add test cases: $tcList"
+                    $group.Message = "$verb test cases: $tcList"
                 }
             }
             else {
                 $fileName = Split-Path $file -Leaf
-                $group.Message = "update $fileName"
+                $group.Message = "$verb $fileName"
             }
         }
         elseif ($file -match 'Page\.ts$') {
@@ -185,53 +211,53 @@ function Get-AtomicCommitGroups {
             $group.Type = "feat"
             $group.Scope = "pages"
             $fileName = Split-Path $file -LeafBase
-            $group.Message = "add $fileName page object"
+            $group.Message = "$verb $fileName page object"
         }
         elseif ($file -match 'Component\.ts$|/components/') {
             # Component
             $group.Type = "feat"
             $group.Scope = "components"
             $fileName = Split-Path $file -LeafBase
-            $group.Message = "add $fileName component"
+            $group.Message = "$verb $fileName component"
         }
         elseif ($file -match '/fixtures/') {
             # Fixture
             $group.Type = "feat"
             $group.Scope = "fixtures"
             $fileName = Split-Path $file -Leaf
-            $group.Message = "update $fileName"
+            $group.Message = "$verb $fileName"
         }
         elseif ($file -match 'playwright\.config|package\.json|tsconfig') {
             # Config
             $group.Type = "chore"
             $group.Scope = "config"
             $fileName = Split-Path $file -Leaf
-            $group.Message = "update $fileName"
+            $group.Message = "$verb $fileName"
         }
         elseif ($file -match '\.env$') {
             # Environment
             $group.Type = "chore"
             $group.Scope = "config"
-            $group.Message = "update environment variables"
+            $group.Message = "$verb environment variables"
         }
         elseif ($file -match '\.md$') {
             # Documentation
             $group.Type = "docs"
             $fileName = Split-Path $file -Leaf
-            $group.Message = "update $fileName"
+            $group.Message = "$verb $fileName"
         }
         elseif ($file -match '\.ps1$|\.sh$') {
             # Scripts
             $group.Type = "chore"
             $group.Scope = "scripts"
             $fileName = Split-Path $file -Leaf
-            $group.Message = "update $fileName"
+            $group.Message = "$verb $fileName"
         }
         else {
             # Other
             $group.Type = "chore"
             $fileName = Split-Path $file -Leaf
-            $group.Message = "update $fileName"
+            $group.Message = "$verb $fileName"
         }
         
         $commitGroups += $group
