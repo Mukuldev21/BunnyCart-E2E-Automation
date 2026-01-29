@@ -8,6 +8,7 @@ import { SearchResultsPage } from '../pages/SearchResultsPage';
 import { CategoryPage } from '../pages/CategoryPage';
 import { ProductDetailsPage } from '../pages/ProductDetailsPage';
 import { CartPage } from '../pages/CartPage';
+import { CheckoutPage } from '../pages/CheckoutPage';
 
 type MyFixtures = {
     header: Header;
@@ -18,6 +19,7 @@ type MyFixtures = {
     productDetailsPage: ProductDetailsPage;
     productPage: ProductPage;
     cartPage: CartPage;
+    checkoutPage: CheckoutPage;
 };
 
 export const test = base.extend<MyFixtures>({
@@ -47,6 +49,9 @@ export const test = base.extend<MyFixtures>({
     },
     cartPage: async ({ page }, use) => {
         await use(new CartPage(page));
+    },
+    checkoutPage: async ({ page }, use) => {
+        await use(new CheckoutPage(page));
     },
 });
 
