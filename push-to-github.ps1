@@ -205,8 +205,24 @@ function Get-AtomicCommitGroups {
                     }
                 }
                 else {
-                    $tcList = ($uniqueTCs | ForEach-Object { "TC$_" }) -join ", "
-                    $group.Message = "$verb test cases: $tcList"
+                    # Multiple test cases - extract all titles
+                    $tcInfo = @()
+                    $titleMatches = [regex]::Matches($content, 'test\([''"`]TC(\d+):\s*(.*?)[''"`]\)')
+                    
+                    foreach ($titleMatch in $titleMatches) {
+                        $tcNum = $titleMatch.Groups[1].Value
+                        $tcTitle = $titleMatch.Groups[2].Value
+                        $tcInfo += "TC$tcNum ($tcTitle)"
+                    }
+                    
+                    if ($tcInfo.Count -gt 0) {
+                        $group.Message = "$verb test cases: $($tcInfo -join ', ')"
+                    }
+                    else {
+                        # Fallback if title extraction failed
+                        $tcList = ($uniqueTCs | ForEach-Object { "TC$_" }) -join ", "
+                        $group.Message = "$verb test cases: $tcList"
+                    }
                 }
             }
             else {
