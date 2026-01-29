@@ -112,4 +112,23 @@ export class CheckoutPage {
         await this.nextButton.click();
         await this.page.waitForLoadState('domcontentloaded', { timeout: 15000 });
     }
+
+    async selectShippingMethod(methodName: string) {
+        // Select a shipping method by clicking its radio button
+        const methodRadio = this.page.getByRole('radio', { name: new RegExp(methodName, 'i') });
+        await expect(methodRadio).toBeVisible({ timeout: 10000 });
+        await methodRadio.click();
+        console.log(`Selected shipping method: ${methodName}`);
+    }
+
+    async verifyPaymentStepLoaded() {
+        // Verify URL contains #payment
+        await expect(this.page).toHaveURL(/.*#payment/, { timeout: 15000 });
+    }
+
+    async verifyShippingCostInSummary(cost: string) {
+        // Verify shipping cost appears in order summary (in a table cell)
+        const costCell = this.page.getByRole('cell', { name: cost }).first();
+        await expect(costCell).toBeVisible({ timeout: 10000 });
+    }
 }
