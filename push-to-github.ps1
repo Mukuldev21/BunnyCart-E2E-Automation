@@ -207,7 +207,7 @@ function Get-AtomicCommitGroups {
                 else {
                     # Multiple test cases - extract all titles
                     $tcInfo = @()
-                    $titleMatches = [regex]::Matches($content, 'test\([''"`]TC(\d+):\s*(.*?)[''"`]\)')
+                    $titleMatches = [regex]::Matches($content, 'test\([''"`]TC(\d+):\s*(.*?)[''"`]')
                     
                     foreach ($titleMatch in $titleMatches) {
                         $tcNum = $titleMatch.Groups[1].Value
