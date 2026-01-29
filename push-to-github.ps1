@@ -436,7 +436,19 @@ if (-not $dryRunSuccess) {
 
 Write-Host ""
 
-# Step 8: Create atomic commits
+# Step 8: Ask for user confirmation
+Write-Host "Review the commit messages above." -ForegroundColor Cyan
+Write-Host "Do you want to proceed with these commits and push to GitHub? (y/N): " -ForegroundColor Yellow -NoNewline
+$confirmation = Read-Host
+
+if ($confirmation -ne "y" -and $confirmation -ne "Y") {
+    Write-ColorMessage "Push cancelled by user" "Warning"
+    exit 0
+}
+
+Write-Host ""
+
+# Step 9: Create atomic commits
 Write-ColorMessage "Creating Atomic Commits" "Header"
 $successCount = 0
 
@@ -459,10 +471,10 @@ Write-Host ""
 Write-ColorMessage "Created $successCount atomic commit(s)" "Success"
 Write-Host ""
 
-# Step 9: Push all commits
+# Step 10: Push all commits
 Invoke-GitPush -Branch $currentBranch
 
-# Step 10: Summary
+# Step 11: Summary
 Write-ColorMessage "Summary" "Header"
 Write-Host "Repository: " -NoNewline -ForegroundColor Cyan
 Write-Host "https://github.com/Mukuldev21/BunnyCart-E2E-Automation.git" -ForegroundColor White
