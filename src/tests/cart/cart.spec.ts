@@ -264,4 +264,74 @@ test.describe('Module 4: Shopping Cart', () => {
         console.log('TC040: Test completed successfully');
     });
 
+    test('TC044: Estimate Shipping and Tax', async ({ page, productDetailsPage, header, cartPage, checkoutPage, loginPage }) => {
+        // ARRANGE
+        console.log('TC044: Starting test - Estimate Shipping and Tax');
+
+        // Precondition 1: Ensure user is logged in
+        const email = process.env.BUNNY_EMAIL || 'pikachu@pokemon.com';
+        const password = process.env.BUNNY_PASSWORD || 'Ash123#';
+
+        // Navigate to login page - if already logged in, will redirect to account page
+        await page.goto('/customer/account/login/');
+
+        // Check if already logged in (by checking if we're on account page or login page)
+        const currentUrl = page.url();
+        if (currentUrl.includes('/customer/account/login')) {
+            // Not logged in, perform login
+            await loginPage.login(email, password);
+            console.log('TC044: Logged in successfully');
+        } else {
+            console.log('TC044: Already logged in');
+        }
+
+        // Precondition 2: Add item to cart
+        await page.goto('/duckweed');
+        console.log('TC044: Navigated to PDP (Duckweed)');
+
+        // Add to cart
+        await productDetailsPage.addToCart();
+        console.log('TC044: Added product to cart');
+
+        // Verify success message
+        await expect(page.getByText('You added', { exact: false }).first()).toBeVisible({ timeout: 10000 });
+
+        // Navigate directly to checkout (user has many items in cart, button may be below fold)
+        await page.goto('/checkout/#shipping');
+        await page.waitForLoadState('domcontentloaded', { timeout: 15000 });
+        console.log('TC044: Navigated to checkout');
+
+        // ACT
+        // Fill shipping address details
+        await checkoutPage.fillShippingAddress({
+            street2: 'Mantri Road Pune',
+            city: 'Pune',
+            stateId: '553', // Maharashtra
+            zip: '411057'
+        });
+        console.log('TC044: Filled shipping address');
+
+        // ASSERT
+        // Verify shipping methods section appears
+        await checkoutPage.verifyShippingMethodsVisible();
+        console.log('TC044: Verified Shipping Methods section is visible');
+
+        // Verify specific shipping methods (actual text from application)
+        await checkoutPage.verifyShippingMethod('Shipping across India (Blue Dart & other leading couriers)');
+        console.log('TC044: Verified Shipping across India method');
+
+        await checkoutPage.verifyShippingMethod('Shipping Table Rates');
+        console.log('TC044: Verified Shipping Table Rates method');
+
+        // Verify shipping rate (₹99.00 for this address/product combination)
+        await checkoutPage.verifyShippingRate('₹99.00');
+        console.log('TC044: Verified shipping rate ₹99.00');
+
+        // Verify Next button is visible (can proceed)
+        await expect(page.getByRole('button', { name: 'Next' })).toBeVisible();
+        console.log('TC044: Verified Next button is visible');
+
+        console.log('TC044: Test completed successfully');
+    });
+
 });
