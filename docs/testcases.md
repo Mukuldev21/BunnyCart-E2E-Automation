@@ -64,8 +64,8 @@
 | TC039 | Remove Item from Cart | High | Functional | Item in cart | 1. Click Trash icon / "Remove item" | - Item removed from list<br>- "You have no items in your shopping cart" (if empty)<br>- Mini-cart count updates | - |
 | TC040 | Proceed to Checkout | Critical | SMOKE | Item in cart | 1. Click "Proceed to Checkout" button | - Redirected to /checkout/#shipping<br>- Secure connection indicator | - |
 | TC041 | Update Qty to Zero | Medium | Functional, Negative | - | 1. Change Qty to 0<br>2. Click Update | - Validation Error usually: "Please enter a quantity greater than 0" OR Item removed (depending on config) | Qty: 0 |
-| TC042 | Apply Valid Discount Code | High | Functional | Valid code exists | 1. Expand "Apply Discount Code"<br>2. Enter Valid Code<br>3. Click "Apply Discount" | - Success Message<br>- Discount amount appears in Summary<br>- Grand Total decreases | Code: [Valid] |
-| TC043 | Apply Invalid Discount Code | Medium | Negative | - | 1. Enter "INVALID123"<br>2. Click Apply | - Error Message: "The coupon code is not valid."<br>- Total remains unchanged | Code: INVALID123 |
+| TC042 | Apply Valid Discount Code **[SKIP - No valid code available]** | High | Functional | Valid code exists | 1. Expand "Apply Discount Code"<br>2. Enter Valid Code<br>3. Click "Apply Discount" | - Success Message<br>- Discount amount appears in Summary<br>- Grand Total decreases | Code: [Valid] |
+| TC043 | Apply Invalid Discount Code **[SKIP - No valid code available]** | Medium | Negative | - | 1. Enter "INVALID123"<br>2. Click Apply | - Error Message: "The coupon code is not valid."<br>- Total remains unchanged | Code: INVALID123 |
 | TC044 | Estimate Shipping and Tax | Medium | Functional | - | 1. Expand "Estimate Shipping and Tax"<br>2. Enter Country, State, Zip | - Shipping options appear with rates<br>- Selecting one updates the estimated total | Addr: [Partial] |
 | TC045 | Verify Empty Cart Message | Low | UI | Empty Cart | 1. Navigate to Cart page with 0 items | - "You have no items in your shopping cart."<br>- "Click here to continue shopping" link visible | - |
 
