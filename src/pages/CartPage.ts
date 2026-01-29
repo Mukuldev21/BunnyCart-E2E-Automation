@@ -7,6 +7,7 @@ export class CartPage {
     readonly updateCartButton: Locator;
     readonly pageTitle: Locator;
     readonly proceedToCheckoutButton: Locator;
+    readonly continueShoppingLink: Locator;
 
     constructor(page: Page) {
         this.page = page;
@@ -21,6 +22,8 @@ export class CartPage {
         this.pageTitle = page.locator('h1.page-title');
         // Proceed to Checkout button
         this.proceedToCheckoutButton = page.getByRole('button', { name: 'Proceed to Checkout' });
+        // Continue Shopping link (appears when cart is empty)
+        this.continueShoppingLink = page.getByRole('link', { name: /continue shopping/i });
     }
 
     async proceedToCheckout() {
@@ -112,5 +115,10 @@ export class CartPage {
         // Verify item is NOT visible in cart
         const item = this.cartItems.filter({ hasText: itemName });
         await expect(item).toBeHidden({ timeout: 10000 });
+    }
+
+    async verifyContinueShoppingLink() {
+        // Verify continue shopping link is visible
+        await expect(this.continueShoppingLink).toBeVisible({ timeout: 10000 });
     }
 }
