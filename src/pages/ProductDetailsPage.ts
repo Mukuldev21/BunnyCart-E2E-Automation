@@ -123,6 +123,13 @@ export class ProductDetailsPage {
         await quantityInput.fill(qty.toString());
     }
 
+    async enterQuantity(qty: string) {
+        // Allow entering strings (e.g. empty, "0", "-1") for negative testing
+        const quantityInput = this.page.locator('#qty');
+        await expect(quantityInput).toBeVisible();
+        await quantityInput.fill(qty);
+    }
+
     async addToWishlist() {
         // Locator for Add to Wish List
         // Often it's an icon with text hidden or visible on hover
