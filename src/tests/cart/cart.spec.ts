@@ -334,4 +334,28 @@ test.describe('Module 4: Shopping Cart', () => {
         console.log('TC044: Test completed successfully');
     });
 
+    test('TC045: Verify Empty Cart Message', async ({ page, cartPage }) => {
+        // ARRANGE
+        console.log('TC045: Starting test - Verify Empty Cart Message');
+
+        // Navigate to cart page (assuming cart is empty or will be empty)
+        await page.goto('/checkout/cart/');
+        console.log('TC045: Navigated to cart page');
+
+        // ACT & ASSERT
+        // Verify cart page loaded
+        await cartPage.verifyCartPageLoaded();
+        console.log('TC045: Verified cart page loaded');
+
+        // Verify empty cart message
+        await cartPage.verifyEmptyCart();
+        console.log('TC045: Verified empty cart message is visible');
+
+        // Verify continue shopping link
+        await cartPage.verifyContinueShoppingLink();
+        console.log('TC045: Verified continue shopping link is visible');
+
+        console.log('TC045: Test completed successfully');
+    });
+
 });
