@@ -1,198 +1,287 @@
 import { test, expect } from '../../fixtures/custom-test';
+import { Logger } from '../../utils/Logger';
 
 test.describe('Module 2: Product Search & Browse', () => {
 
-    test('TC013: Category Navigation - Level 1', async ({ page, header, categoryPage }) => {
+    test('TC011: Global Search - Valid Product', { tag: ['@browse', '@search', '@critical'] }, async ({ page, header, searchResultsPage }) => {
+        Logger.step('Starting TC011: Global Search - Valid Product');
+
+        // ARRANGE
+        await page.goto('/');
+        Logger.info('Navigated to homepage');
+
+        // ACT
+        const searchQuery = 'Anubias';
+        Logger.info(`Searching for "${searchQuery}"...`);
+        await header.searchFor(searchQuery);
+
+        // ASSERT
+        Logger.step('Verifying search results...');
+        await searchResultsPage.verifyResultsHeader(searchQuery);
+        await searchResultsPage.verifyProductVisible(searchQuery);
+
+        Logger.success('TC011 Completed Successfully');
+    });
+
+    test('TC012: Global Search - No Results', { tag: ['@browse', '@search', '@negative'] }, async ({ page, header, searchResultsPage }) => {
+        Logger.step('Starting TC012: Global Search - No Results');
+
         // ARRANGE
         await page.goto('/');
 
         // ACT
-        // Click on top level category "Aquatic Plants"
-        await header.clickCategory('Aquatic Plants');
+        const invalidQuery = 'XylophoneFish';
+        Logger.info(`Searching for non-existent product "${invalidQuery}"...`);
+        await header.searchFor(invalidQuery);
 
         // ASSERT
-        // Verify correct category page is loaded
-        await categoryPage.verifyCategoryLoaded('Aquatic Plants');
+        Logger.step('Verifying no results message...');
+        await searchResultsPage.verifyNoResultsMessage(invalidQuery);
+
+        Logger.success('TC012 Completed Successfully');
     });
 
-    test('TC014: Filter Products by Price', async ({ page, categoryPage }) => {
+    test('TC013: Category Navigation - Level 1', { tag: ['@browse', '@navigation', '@high'] }, async ({ page, header, categoryPage }) => {
+        Logger.step('Starting TC013: Category Navigation - Level 1');
+
         // ARRANGE
-        await page.goto('/aquarium-plants');
+        await page.goto('/');
 
         // ACT
+        const category = 'Aquatic Plants';
+        Logger.info(`Clicking top level category: ${category}`);
+        await header.clickCategory(category);
+
+        // ASSERT
+        Logger.step('Verifying category page loaded...');
+        await categoryPage.verifyCategoryLoaded(category);
+
+        Logger.success('TC013 Completed Successfully');
+    });
+
+    test('TC014: Filter Products by Price', { tag: ['@browse', '@filter', '@medium'] }, async ({ page, categoryPage }) => {
+        Logger.step('Starting TC014: Filter Products by Price');
+
+        // ARRANGE
+        await page.goto('/aquarium-plants');
+        Logger.info('Navigated to Aquatic Plants PLP');
+
+        // ACT
+        Logger.info('Applying Price Filter (0-1000)...');
         // Filter by Price range 0-1000
+        // Ideally we should make this robust to available ranges
         await categoryPage.filterByPrice(0, 1000);
 
         // ASSERT
-        // Verify "Now Shopping by" shows Price filter with correct range
-        // Verify "Now Shopping by" shows Price filter with correct range
+        Logger.step('Verifying price filter active...');
         await categoryPage.verifyFilterActive('Price', '₹0.00 - ₹1,000.00');
+
+        Logger.success('TC014 Completed Successfully');
     });
 
-    test('TC015: Sort Products by Name', async ({ page, categoryPage }) => {
+    test('TC015: Sort Products by Name', { tag: ['@browse', '@sort', '@low'] }, async ({ page, categoryPage }) => {
+        Logger.step('Starting TC015: Sort Products by Name');
+
         // ARRANGE
         await page.goto('/aquarium-plants');
 
         // ACT
-        // Sort by "Product Name"
+        Logger.info('Sorting by Product Name...');
         await categoryPage.sortBy('Product Name');
 
         // ASSERT
-        // Verify products are sorted alphabetically (Ascending is default for Name)
+        Logger.step('Verifying alphabetical sort...');
         await categoryPage.verifySorting('asc');
+
+        Logger.success('TC015 Completed Successfully');
     });
 
-    test('TC016: Product Listing - view Details', async ({ page, categoryPage, productDetailsPage }) => {
+    test('TC016: Product Listing - view Details', { tag: ['@browse', '@navigation', '@high'] }, async ({ page, categoryPage, productDetailsPage }) => {
+        Logger.step('Starting TC016: Product Listing - view Details');
+
         // ARRANGE
         await page.goto('/aquarium-plants');
 
-        // Use a known product that usually appears early in the list
-        // Based on previous sorts, "Acmella repens" or "Aglaonema simplex" should be available
-        // Let's use "Acmella repens" if sorted by name, but we are just landing on default.
-        // Default list starts with Rotala Wallichii usually.
-        // Let's pick "Rotala Wallichii" or "Bacopa Caroliniana" as they are common.
         const targetProduct = 'Bacopa Caroliniana';
+        Logger.info(`Targeting product: ${targetProduct}`);
 
         // ACT
-        // Click on product
         await categoryPage.clickProduct(targetProduct);
 
         // ASSERT
-        // Verify PDP is loaded
+        Logger.step('Verifying PDP loaded...');
         await productDetailsPage.verifyProductLoaded(targetProduct);
+
+        Logger.success('TC016 Completed Successfully');
     });
 
-    test('TC017: Pagination - Next Page', async ({ page, categoryPage }) => {
+    test('TC017: Pagination - Next Page', { tag: ['@browse', '@pagination', '@medium'] }, async ({ page, categoryPage }) => {
+        Logger.step('Starting TC017: Pagination - Next Page');
+
         // ARRANGE
         await page.goto('/aquarium-plants');
 
         // ACT
-        // Navigate to Next Page
+        Logger.info('Navigating to Next Page...');
         await categoryPage.navigateToNextPage();
 
         // ASSERT
-        // Verify we are on Page 2
+        Logger.step('Verifying Page 2 is active...');
         await categoryPage.verifyPageActive(2);
+
+        Logger.success('TC017 Completed Successfully');
     });
 
-    test('TC018: Sub-Category Navigation', async ({ page, header, categoryPage }) => {
+    test('TC018: Sub-Category Navigation', { tag: ['@browse', '@navigation', '@medium'] }, async ({ page, header, categoryPage }) => {
+        Logger.step('Starting TC018: Sub-Category Navigation');
+
         // ARRANGE
         await page.goto('/');
 
         // ACT
-        // Hover over "Aquatic Plants" and click "Foreground"
-        // Note: The menu text might be "Foreground Aquatic Plants" or just "Foreground".
-        // Based on inspection, the link title is 'Foreground Aquatic Plants'.
-        await header.hoverAndClickSubCategory('Aquatic Plants', 'Foreground');
+        const parentCategory = 'Aquatic Plants';
+        const subCategory = 'Foreground';
+        Logger.info(`Hovering ${parentCategory} and clicking ${subCategory}...`);
+        await header.hoverAndClickSubCategory(parentCategory, subCategory);
 
         // ASSERT
-        // Verify correct category page loaded
         // The actual category name in breadcrumbs/title is "Foreground Aquatic Plants"
         await categoryPage.verifyCategoryLoaded('Foreground Aquatic Plants');
+
+        Logger.success('TC018 Completed Successfully');
     });
 
-    test('TC019: Filter Products by Attribute', async ({ page, categoryPage }) => {
+    test('TC019: Filter Products by Attribute', { tag: ['@browse', '@filter', '@low'] }, async ({ page, categoryPage }) => {
+        Logger.step('Starting TC019: Filter Products by Attribute');
+
         // ARRANGE
-        // Navigate to a category with filters (Aquatic Plants)
         await page.goto('/aquarium-plants');
 
         // ACT
-        // Filter by "Difficulty" -> "Easy"
-        await categoryPage.filterByAttribute('Difficulty', 'Easy');
+        const filterType = 'Difficulty';
+        const filterValue = 'Easy';
+        Logger.info(`Filtering by ${filterType}: ${filterValue}...`);
 
-        // ASSERT
-        // Verify the filter is active in the "Now Shopping by" section
-        await categoryPage.verifyFilterActive('Difficulty', 'Easy');
+        try {
+            await categoryPage.filterByAttribute(filterType, filterValue);
 
-        // Check filtering by network or results rather than strict URL param if IDs are involved
-        // But verifying filter active is usually sufficient if it asserts the tag is present
-        // We can just omit the strict URL check or check for *any* query param change if needed
-        // For now, let's rely on verifyFilterActive which checks the UI state
+            // ASSERT
+            Logger.step('Verifying filter active...');
+            await categoryPage.verifyFilterActive(filterType, filterValue);
+        } catch (error) {
+            Logger.warn(`Filter ${filterType}: ${filterValue} might not be available or locators changed. Test proceeding strictly.`);
+            throw error;
+        }
+
+        Logger.success('TC019 Completed Successfully');
     });
 
-    test('TC020: Clear All Filters', async ({ page, categoryPage }) => {
+    test('TC020: Clear All Filters', { tag: ['@browse', '@filter', '@medium'] }, async ({ page, categoryPage }) => {
+        Logger.step('Starting TC020: Clear All Filters');
+
         // ARRANGE
-        // Navigate to a category and apply a filter
         await page.goto('/aquarium-plants');
         await categoryPage.filterByAttribute('Difficulty', 'Easy');
         await categoryPage.verifyFilterActive('Difficulty', 'Easy');
+        Logger.info('Filter applied. Now clearing...');
 
         // ACT
-        // Click Clear All
         await categoryPage.clearAllFilters();
 
         // ASSERT
-        // Verify "Now Shopping by" section is gone
+        Logger.step('Verifying all filters cleared...');
         const activeFilters = page.locator('.filter-current');
         await expect(activeFilters).toBeHidden();
-
-        // Verify URL is free of the filter param (simple check)
         await expect(page).not.toHaveURL(/difficulty=/);
+
+        Logger.success('TC020 Completed Successfully');
     });
 
-    test('TC021: Verify Default Grid View', async ({ page, categoryPage }) => {
+    test('TC021: Verify Default Grid View', { tag: ['@browse', '@ui', '@low'] }, async ({ page, categoryPage }) => {
+        Logger.step('Starting TC021: Verify Default Grid View');
+
         // ARRANGE
         await page.goto('/aquarium-plants');
 
         // ACT & ASSERT
-        // Verify the default view is Grid
+        Logger.info('Verifying Grid View is default...');
         await categoryPage.verifyGridView();
+
+        Logger.success('TC021 Completed Successfully');
     });
 
-    test('TC022: Sort Products by Price (Low > High)', async ({ page, categoryPage }) => {
+    test('TC022: Sort Products by Price (Low > High)', { tag: ['@browse', '@sort', '@medium'] }, async ({ page, categoryPage }) => {
+        Logger.step('Starting TC022: Sort Products by Price (Low > High)');
+
         // ARRANGE
         await page.goto('/aquarium-plants');
 
         // ACT
-        // First sort by Name to ensure we change state (since Price is default)
+        // First sort by Name to ensure we change state
         await categoryPage.sortBy('name');
-        // await categoryPage.verifySorting('asc'); // Verification removed as it fails on current data
 
-        // Now Sort by Price
+        Logger.info('Sorting by Price (Ascending)...');
         await categoryPage.sortBy('price');
 
         // ASSERT
+        Logger.step('Verifying price sort (asc)...');
         await categoryPage.verifyPriceSorting('asc');
+
+        Logger.success('TC022 Completed Successfully');
     });
 
-    test('TC023: Sort Products by Price (High > Low)', async ({ page, categoryPage }) => {
+    test('TC023: Sort Products by Price (High > Low)', { tag: ['@browse', '@sort', '@medium'] }, async ({ page, categoryPage }) => {
+        Logger.step('Starting TC023: Sort Products by Price (High > Low)');
+
         // ARRANGE
         await page.goto('/aquarium-plants');
 
         // ACT
-        // 1. Sort by Price (Default is Low > High / Asc)
+        Logger.info('Sorting by Price (Descending)...');
         await categoryPage.sortBy('price');
-
-        // 2. Change Direction to Descending (High > Low)
         await categoryPage.setSortDirection('desc');
 
         // ASSERT
+        Logger.step('Verifying price sort (desc)...');
         await categoryPage.verifyPriceSorting('desc');
+
+        Logger.success('TC023 Completed Successfully');
     });
 
-    test('TC024: Change Items Per Page', async ({ page, categoryPage }) => {
+    test('TC024: Change Items Per Page', { tag: ['@browse', '@pagination', '@low'] }, async ({ page, categoryPage }) => {
+        Logger.step('Starting TC024: Change Items Per Page');
+
         // ARRANGE
         await page.goto('/aquarium-plants');
 
         // ACT
-        // Change to 40 items per page
-        await categoryPage.changeItemsPerPage(40);
+        const limit = 40;
+        Logger.info(`Changing items per page to ${limit}...`);
+        await categoryPage.changeItemsPerPage(limit);
 
         // ASSERT
-        await categoryPage.verifyItemsPerPage(40);
+        Logger.step(`Verifying ${limit} items visible...`);
+        await categoryPage.verifyItemsPerPage(limit);
+
+        Logger.success('TC024 Completed Successfully');
     });
 
-    test('TC025: Breadcrumb Navigation Click', async ({ page, categoryPage }) => {
+    test('TC025: Breadcrumb Navigation Click', { tag: ['@browse', '@navigation', '@medium'] }, async ({ page, categoryPage }) => {
+        Logger.step('Starting TC025: Breadcrumb Navigation Click');
+
         // ARRANGE
         await page.goto('/aquarium-plants');
 
         // ACT
-        // Click on "Home" breadcrumb
+        Logger.info('Clicking "Home" in breadcrumb...');
         await categoryPage.clickBreadcrumb('Home');
 
         // ASSERT
+        Logger.step('Verifying redirection to Home...');
         await expect(page).toHaveURL('https://www.bunnycart.com/');
         await expect(page).toHaveTitle(/Buy Aquatic Plants & Aquarium Fish online/);
+
+        Logger.success('TC025 Completed Successfully');
     });
 
 });
