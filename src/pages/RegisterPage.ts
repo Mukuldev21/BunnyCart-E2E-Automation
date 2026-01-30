@@ -1,5 +1,6 @@
 import { type Page, expect } from '@playwright/test';
 import { Header } from '../components/Header';
+import { BasePage } from './BasePage';
 
 export interface RegistrationData {
     firstName: string;
@@ -10,17 +11,22 @@ export interface RegistrationData {
     mobile?: string;
 }
 
-export class RegisterPage {
+export class RegisterPage extends BasePage {
     readonly header: Header;
 
-    constructor(private readonly page: Page) {
+    constructor(page: Page) {
+        super(page);
         this.header = new Header(page);
     }
 
     async navigateToRegister() {
-        // Updated based on codegen: goto('/') then click "Create an Account"
-        await this.page.goto('/');
+        // Navigate to homepage first, then click "Create an Account"
+        await this.navigateToHomepage();
         await this.header.clickCreateAccount();
+    }
+
+    async navigateToHomepage() {
+        await this.navigateTo('/');
     }
 
     async registerNewUser(data: RegistrationData) {
