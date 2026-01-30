@@ -1,28 +1,37 @@
 import { type Page, expect } from '@playwright/test';
+import { BasePage } from '../pages/BasePage';
 
-export class Header {
-    constructor(private readonly page: Page) { }
+export class Header extends BasePage {
+    constructor(page: Page) {
+        super(page);
+    }
 
     async clickSignIn() {
-        await this.page.getByRole('link', { name: 'Sign In' }).click();
+        const signInLink = this.page.getByRole('link', { name: 'Sign In' });
+        await this.click(signInLink);
     }
 
     async clickCreateAccount() {
-        await this.page.getByRole('link', { name: 'Create an Account' }).click();
+        const createAccountLink = this.page.getByRole('link', { name: 'Create an Account' });
+        await this.click(createAccountLink);
     }
 
     async clickSignOut() {
         // Updated based on codegen: straightforward lookup
-        await this.page.getByText('Sign out').first().click();
+        const signOutLink = this.page.getByText('Sign out').first();
+        await this.click(signOutLink);
     }
 
     async verifyWelcomeMessage(firstName: string, lastName: string) {
         // Use .logged-in class which is standard and robust
         // Use case-insensitive regex to handle capitalization differences
         const locator = this.page.locator('.logged-in').first();
-        await expect(locator).toBeVisible({ timeout: 10000 }); // Give it time to appear
         const regex = new RegExp(`Welcome, ${firstName} ${lastName}!`, 'i');
-        await expect(locator).toHaveText(regex);
+
+        // Reduced timeout from 10000ms to 5000ms for faster feedback
+        // Reverting to DEFAULT_TIMEOUT (10000ms) as registration redirect can handle slow
+        await this.verifyVisible(locator, this.DEFAULT_TIMEOUT);
+        await this.verifyExactText(locator, regex, this.DEFAULT_TIMEOUT);
     }
 
     async isSignInLinkVisible(): Promise<boolean> {
@@ -32,13 +41,15 @@ export class Header {
     async searchFor(query: string) {
         // Updated based on browser inspection: ID is 'search', placeholder is 'Search...'
         const searchInput = this.page.locator('#search');
-        await searchInput.fill(query);
-        await searchInput.press('Enter');
+        await this.fill(searchInput, query);
+        await this.pressKey(searchInput, 'Enter');
     }
+
     async clickCategory(categoryName: string) {
         // Use exact text match for top-level menu items to avoid ambiguity
         // Exclude .side-megamenu to avoid duplicates on some resolutions/layouts
-        await this.page.locator('nav.navigation:not(.side-megamenu) a.level-top').filter({ hasText: categoryName }).click();
+        const categoryLink = this.page.locator('nav.navigation:not(.side-megamenu) a.level-top').filter({ hasText: categoryName });
+        await this.click(categoryLink);
     }
 
     async hoverAndClickSubCategory(mainCategory: string, subCategory: string) {
@@ -46,7 +57,7 @@ export class Header {
         const mainNav = this.page.locator('nav.navigation:not(.side-megamenu) a.level-top').filter({ hasText: mainCategory });
 
         // Hover to trigger dropdown
-        await mainNav.hover();
+        await this.hover(mainNav);
 
         // Wait for sub-menu container to appear (generic wait)
         // Usually .submenu or .level0.submenu
@@ -57,8 +68,8 @@ export class Header {
         const subLink = this.page.locator('a.level-top, li.level1 a').filter({ hasText: subCategory }).locator('visible=true');
 
         // Wait for visibility explicitly
-        await expect(subLink.first()).toBeVisible();
-        await subLink.first().click();
+        await this.verifyVisible(subLink.first());
+        await this.click(subLink.first());
     }
 
     // Mini-Cart Methods
@@ -66,26 +77,28 @@ export class Header {
         // "Your Cart" link with item count: "Your Cart ₹40.00 1 items"
         // Using partial match for robustness
         const cartLink = this.page.getByRole('link', { name: /Your Cart/i });
-        await expect(cartLink).toBeVisible();
-        await this.page.waitForLoadState('domcontentloaded'); // Ensure DOM is ready
-        await cartLink.click();
+        await this.verifyVisible(cartLink);
+        await this.click(cartLink);
     }
 
     async verifyMiniCartVisible() {
         // Verify the mini-cart container is visible
         // It might take animation time
         const miniCart = this.page.locator('.minicart-items-wrapper');
-        await expect(miniCart).toBeVisible({ timeout: 10000 });
-        await expect(this.page.getByRole('button', { name: 'Go to Checkout' })).toBeVisible();
+        const checkoutButton = this.page.getByRole('button', { name: 'Go to Checkout' });
+
+        await this.verifyVisible(miniCart, this.DEFAULT_TIMEOUT);
+        await this.verifyVisible(checkoutButton);
     }
 
     async clickProceedToCheckout() {
-        await this.page.getByRole('button', { name: 'Go to Checkout' }).click();
+        const checkoutButton = this.page.getByRole('button', { name: 'Go to Checkout' });
+        await this.click(checkoutButton);
     }
 
     async clickViewAndEditCart() {
         // Click "View and Edit Cart" link in mini-cart dropdown
-        await this.page.getByRole('link', { name: /View and Edit Cart/i }).click();
-        await this.page.waitForLoadState('domcontentloaded', { timeout: 15000 });
+        const viewCartLink = this.page.getByRole('link', { name: /View and Edit Cart/i });
+        await this.click(viewCartLink);
     }
 }
