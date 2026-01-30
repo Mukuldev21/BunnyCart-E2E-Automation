@@ -31,7 +31,8 @@ test.describe('Module 1: Authentication & User Management', () => {
 
     test('TC002: Login Failure - Invalid Password', { tag: ['@auth', '@negative'] }, async ({ loginPage }) => {
         Logger.step('Starting TC002: Login Failure - Invalid Password');
-        await loginPage.navigateToLogin();
+        // Navigate via homepage first (required for proper error handling)
+        await loginPage.navigateToLoginViaHomepage();
         await loginPage.login(INVALID_EMAIL!, INVALID_PASSWORD!);
         Logger.info('Invalid credentials submitted. Verifying error...');
         await loginPage.verifyLoginError();
@@ -81,7 +82,8 @@ test.describe('Module 1: Authentication & User Management', () => {
 
     test('TC004: Forgot Password - Email Trigger', { tag: ['@auth', '@positive'] }, async ({ loginPage, page }) => {
         Logger.step('Starting TC004: Forgot Password');
-        await loginPage.navigateToLogin();
+        // Navigate via homepage first
+        await loginPage.navigateToLoginViaHomepage();
         await loginPage.clickForgotPassword();
         Logger.info(`Submitting forgot password for ${VALID_EMAIL!}`);
         await loginPage.submitForgotPassword(VALID_EMAIL!);
@@ -92,7 +94,8 @@ test.describe('Module 1: Authentication & User Management', () => {
 
     test('TC005: Login Validation - Empty Credentials', { tag: ['@auth', '@negative'] }, async ({ loginPage, page }) => {
         Logger.step('Starting TC005: Login Validation - Empty Credentials');
-        await loginPage.navigateToLogin();
+        // Navigate via homepage first
+        await loginPage.navigateToLoginViaHomepage();
 
         // Directly click Sign In without entering data
         await page.getByRole('button', { name: 'Sign In' }).click();
@@ -108,6 +111,7 @@ test.describe('Module 1: Authentication & User Management', () => {
 
     test('TC006: Sign Out Functionality', { tag: ['@auth', '@smoke', '@positive'] }, async ({ loginPage, header, page }) => {
         Logger.step('Starting TC006: Sign Out Functionality');
+        // Use direct navigation for positive test (faster)
         await loginPage.navigateToLogin();
         await loginPage.login(VALID_EMAIL!, VALID_PASSWORD!);
         Logger.info('Logged in. Attempting sign out...');
@@ -152,51 +156,28 @@ test.describe('Module 1: Authentication & User Management', () => {
         Logger.success('TC008 Completed Successfully');
     });
 
-    test('TC009: Login from Checkout (Guest -> User)', { tag: ['@auth', '@e2e', '@positive'] }, async ({ productPage, page, header }) => {
+    test('TC009: Login from Checkout (Guest -> User)', { tag: ['@auth', '@e2e', '@positive'] }, async ({ productPage, page, header, checkoutPage }) => {
         Logger.step('Starting TC009: Login from Checkout');
 
         // 1. Navigate to Home
         await page.goto('https://www.bunnycart.com/');
 
-        // 2. Click 'Background' link
+        // 2. Add product to cart (Background -> Select -> Add)
         await page.getByRole('link', { name: 'Background' }).click();
-
-        // 3. Click first product
-        // Codegen: locator('.product > a').first().click();
         await page.locator('.product > a').first().click();
-
-        // 4. Select 'Net Pot' Option
-        // Codegen showed: await page.getByRole('option', { name: 'Net Pot' }).click();
-        // and before that clicked 'This is a required field' - likely triggering validation or interaction.
-        // We go straight for the option.
         await productPage.selectOption('Net Pot');
-
-        // 5. Add to Cart
         await productPage.addToCart();
         Logger.info('Product added to cart. Navigating to checkout...');
 
-        // 6. Go to Checkout
-        // Codegen: await page.getByRole('link', { name: ' Your Cart ₹40.00 1 items' }).click();
-        await page.getByRole('link', { name: /Your Cart/ }).click();
-        // Codegen: await page.getByRole('button', { name: 'Go to Checkout' }).click();
-        await page.getByRole('button', { name: 'Go to Checkout' }).click();
+        // 3. Go to Checkout using Header
+        await header.clickCartIcon();
+        await header.clickProceedToCheckout();
 
-        // 7. Login at Checkout
+        // 4. Login at Checkout using CheckoutPage methods
         Logger.info('Sign In panel opened. Entering credentials...');
-        // Codegen: 
-        // await page.getByRole('textbox', { name: 'Email Address*' }).click();
-        // await page.getByRole('textbox', { name: 'Email Address*' }).fill('pikachu@pokemon.com');
-        await page.getByRole('textbox', { name: 'Email Address' }).first().click();
-        await page.getByRole('textbox', { name: 'Email Address' }).first().fill(VALID_EMAIL!);
+        await checkoutPage.loginFromCheckout(VALID_EMAIL!, VALID_PASSWORD!);
 
-        // Codegen: await page.locator('div > .field.password').click();
-        // await page.getByRole('textbox', { name: 'Password Password*' }).fill('Ash123#');
-        await page.getByRole('textbox', { name: 'Password' }).first().fill(VALID_PASSWORD!);
-
-        await page.getByRole('button', { name: 'Sign In' }).click();
-
-        // 8. Verify Login
-        // Codegen: await expect(page.getByText('Welcome, Pikachu Ash!')).toBeVisible();
+        // 5. Verify Login (Welcome Message)
         await header.verifyWelcomeMessage(FIRST_NAME!, LAST_NAME!);
 
         Logger.success('TC009 Completed Successfully');
