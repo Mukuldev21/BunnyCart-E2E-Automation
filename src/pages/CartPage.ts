@@ -1,7 +1,7 @@
 import { type Page, type Locator, expect } from '@playwright/test';
+import { BasePage } from './BasePage';
 
-export class CartPage {
-    readonly page: Page;
+export class CartPage extends BasePage {
     readonly cartItems: Locator;
     readonly subtotal: Locator;
     readonly updateCartButton: Locator;
@@ -10,7 +10,7 @@ export class CartPage {
     readonly continueShoppingLink: Locator;
 
     constructor(page: Page) {
-        this.page = page;
+        super(page);
         // Cart items container
         this.cartItems = page.locator('.cart.item');
         // Subtotal in order summary
@@ -27,32 +27,31 @@ export class CartPage {
     }
 
     async proceedToCheckout() {
-        await expect(this.proceedToCheckoutButton).toBeVisible({ timeout: 10000 });
-        await this.proceedToCheckoutButton.click();
+        await this.verifyVisible(this.proceedToCheckoutButton, this.DEFAULT_TIMEOUT);
+        await this.click(this.proceedToCheckoutButton);
     }
 
     async verifyCartPageLoaded() {
         // Verify URL contains /checkout/cart/
-        await expect(this.page).toHaveURL(/.*\/checkout\/cart\//, { timeout: 15000 });
+        await this.verifyURL(/.*\/checkout\/cart\//, 15000);
         // Verify page title
-        await expect(this.pageTitle).toContainText(/Shopping Cart/i, { timeout: 10000 });
+        await this.verifyText(this.pageTitle, /Shopping Cart/i, this.DEFAULT_TIMEOUT);
     }
 
     async verifyItemInCart(itemName: string) {
         // Verify item is visible in cart
         const item = this.cartItems.filter({ hasText: itemName });
-        await expect(item).toBeVisible({ timeout: 10000 });
+        await this.verifyVisible(item, this.DEFAULT_TIMEOUT);
     }
 
     async getSubtotal(): Promise<string> {
         // Get subtotal text
-        const text = await this.subtotal.textContent();
-        return text || '';
+        return await this.getText(this.subtotal);
     }
 
     async verifySubtotalVisible() {
         // Verify subtotal is visible
-        await expect(this.subtotal).toBeVisible({ timeout: 10000 });
+        await this.verifyVisible(this.subtotal, this.DEFAULT_TIMEOUT);
     }
 
     async getItemQuantity(itemName: string): Promise<string> {
@@ -66,14 +65,15 @@ export class CartPage {
         // Update quantity for specific item
         const item = this.cartItems.filter({ hasText: itemName });
         const qtyInput = item.locator('input.qty');
-        await qtyInput.fill(quantity.toString());
-        await qtyInput.press('Enter');
-        await this.page.waitForLoadState('domcontentloaded', { timeout: 15000 });
+        await this.fill(qtyInput, quantity.toString());
+        await this.pressKey(qtyInput, 'Enter');
+        // Wait for cart to update (element-based wait)
+        await this.waitForElement(this.subtotal);
     }
 
     async getSubtotalAmount(): Promise<number> {
         // Get subtotal as a number
-        const text = await this.subtotal.textContent();
+        const text = await this.getText(this.subtotal);
         // Remove currency symbol and commas, then parse
         // Assuming format like "₹123.00" or "$123.00"
         const cleanText = text?.replace(/[^0-9.]/g, '') || '0';
@@ -82,9 +82,10 @@ export class CartPage {
 
     async clickUpdateCart() {
         // Click update cart button
-        await expect(this.updateCartButton).toBeVisible({ timeout: 10000 });
-        await this.updateCartButton.click();
-        await this.page.waitForLoadState('domcontentloaded', { timeout: 15000 });
+        await this.verifyVisible(this.updateCartButton, this.DEFAULT_TIMEOUT);
+        await this.click(this.updateCartButton);
+        // Wait for cart to update (element-based wait)
+        await this.waitForElement(this.subtotal);
     }
 
     async removeItem(itemName: string) {
@@ -100,25 +101,26 @@ export class CartPage {
             dialog.accept().catch(() => { });
         });
 
-        await expect(removeButton).toBeVisible({ timeout: 10000 });
-        await removeButton.click();
+        await this.verifyVisible(removeButton, this.DEFAULT_TIMEOUT);
+        await this.click(removeButton);
     }
 
     async verifyEmptyCart() {
         // Verify empty cart message
         // Use .first() or specific container to avoid strict mode error (minicart vs main page)
         // Preferring main content if possible, but .first() is sufficient for "visible" check
-        await expect(this.page.locator('.cart-empty').filter({ hasText: /You have no items/i }).first()).toBeVisible({ timeout: 10000 });
+        const emptyCartMessage = this.page.locator('.cart-empty').filter({ hasText: /You have no items/i }).first();
+        await this.verifyVisible(emptyCartMessage, this.DEFAULT_TIMEOUT);
     }
 
     async verifyItemNotInCart(itemName: string) {
         // Verify item is NOT visible in cart
         const item = this.cartItems.filter({ hasText: itemName });
-        await expect(item).toBeHidden({ timeout: 10000 });
+        await this.verifyHidden(item, this.DEFAULT_TIMEOUT);
     }
 
     async verifyContinueShoppingLink() {
         // Verify continue shopping link is visible
-        await expect(this.continueShoppingLink).toBeVisible({ timeout: 10000 });
+        await this.verifyVisible(this.continueShoppingLink, this.DEFAULT_TIMEOUT);
     }
 }
