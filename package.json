@@ -19,6 +19,7 @@
   "license": "ISC",
   "type": "commonjs",
   "devDependencies": {
+    "@executeautomation/playwright-mcp-server": "^1.0.12",
     "@playwright/test": "^1.57.0",
     "@types/node": "^25.0.3",
     "dotenv": "^17.2.3",

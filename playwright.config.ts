@@ -21,6 +21,8 @@ export default defineConfig({
     ],
     use: {
         baseURL: BASE_URL,
+        actionTimeout: 10000, // Faster action timeout
+        navigationTimeout: 30000, // Explicit navigation timeout
         trace: 'on-first-retry',
         screenshot: 'only-on-failure',
         video: 'retain-on-failure',
