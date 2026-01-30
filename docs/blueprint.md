@@ -215,29 +215,157 @@ Create a structured map of the application (can be in artifact or notes):
 - .env.example
 ```
 
-### Step 3.3: Implement Component Object Model (Bottom-Up)
+### Step 3.3: Create BasePage Foundation (MANDATORY)
+
+**CRITICAL:** Before implementing any Page Objects or Components, create the `BasePage` class.
+
+**File:** `src/pages/BasePage.ts`
+
+**Why BasePage First:**
+- Provides optimized utilities for all pages
+- Ensures consistent wait strategies (30-40% faster tests)
+- Centralizes timeout configuration
+- Eliminates redundant code across pages
+
+**Implementation:**
+
+1. **Create BasePage with:**
+   - Optimized navigation methods (default to `domcontentloaded`)
+   - Smart wait utilities (`waitForElement`, `waitForElementHidden`)
+   - Reusable action methods (`click`, `fill`, `selectOption`, `getText`)
+   - Assertion helpers (`verifyVisible`, `verifyHidden`, `verifyText`, `verifyURL`)
+   - Centralized timeouts (`DEFAULT_TIMEOUT`, `SHORT_TIMEOUT`, `LONG_TIMEOUT`)
+
+2. **Reference:** See AI_TEST_STANDARDS.md Section 2.1 for complete BasePage implementation
+
+**Example BasePage.ts (Minimal):**
+
+```typescript
+import { type Page, type Locator, expect } from '@playwright/test';
+
+export class BasePage {
+    protected readonly page: Page;
+    protected readonly DEFAULT_TIMEOUT = 10000;
+    protected readonly SHORT_TIMEOUT = 5000;
+    protected readonly LONG_TIMEOUT = 30000;
+
+    constructor(page: Page) {
+        this.page = page;
+    }
+
+    // Optimized navigation (domcontentloaded is 2-3s faster than 'load')
+    async navigateTo(url: string, waitUntil: 'load' | 'domcontentloaded' | 'networkidle' = 'domcontentloaded') {
+        await this.page.goto(url, { waitUntil });
+    }
+
+    // Smart waits
+    async waitForElement(locator: Locator, timeout: number = this.DEFAULT_TIMEOUT) {
+        await locator.waitFor({ state: 'visible', timeout });
+    }
+
+    // Reusable actions
+    async click(locator: Locator, options?: { timeout?: number }) {
+        await locator.click({ timeout: options?.timeout || this.DEFAULT_TIMEOUT });
+    }
+
+    async fill(locator: Locator, value: string, timeout: number = this.DEFAULT_TIMEOUT) {
+        await locator.fill(value, { timeout });
+    }
+
+    async selectOption(locator: Locator, value: string | string[], timeout: number = this.DEFAULT_TIMEOUT) {
+        await locator.selectOption(value, { timeout });
+    }
+
+    // Assertion helpers
+    async verifyVisible(locator: Locator, timeout: number = this.DEFAULT_TIMEOUT) {
+        await expect(locator).toBeVisible({ timeout });
+    }
+
+    async verifyText(locator: Locator, text: string | RegExp, timeout: number = this.DEFAULT_TIMEOUT) {
+        await expect(locator).toContainText(text, { timeout });
+    }
+
+    async verifyURL(pattern: string | RegExp, timeout: number = this.DEFAULT_TIMEOUT) {
+        await expect(this.page).toHaveURL(pattern, { timeout });
+    }
+
+    // Utility methods
+    async getCurrentURL(): Promise<string> {
+        return this.page.url();
+    }
+
+    async wait(ms: number) {
+        await this.page.waitForTimeout(ms);
+    }
+}
+```
+
+**Performance Impact:**
+- Direct navigation: 3-5s saved per test
+- Element-based waits: 2-3s saved per test
+- Optimized timeouts: 1-2s saved per test
+- **Total: 30-40% faster test execution**
+
+### Step 3.4: Implement Component Object Model (Bottom-Up)
 
 **Order of Implementation:**
 
 1. **Shared Components First** (can be created in parallel):
-   - `src/components/Header.ts`
-   - `src/components/Navbar.ts`
-   - `src/components/Modal.ts`
-   - `src/components/DataTable.ts`
+   - `src/components/Header.ts` (extends BasePage)
+   - `src/components/Navbar.ts` (extends BasePage)
+   - `src/components/Modal.ts` (extends BasePage)
+   - `src/components/DataTable.ts` (extends BasePage)
 
 2. **Page Objects Second** (compose components):
-   - `src/pages/LoginPage.ts` (uses Header if applicable)
-   - `src/pages/DashboardPage.ts` (uses Header, Navbar, etc.)
-   - `src/pages/[Feature]Page.ts`
+   - `src/pages/LoginPage.ts` (extends BasePage, uses Header if applicable)
+   - `src/pages/DashboardPage.ts` (extends BasePage, uses Header, Navbar, etc.)
+   - `src/pages/[Feature]Page.ts` (extends BasePage)
 
 3. **Update Fixtures** (`src/fixtures/custom-test.ts`):
    - Import all page objects
    - Add to `MyFixtures` type
    - Initialize in `test.extend()`
 
+**Example Page Object extending BasePage:**
+
+```typescript
+import { type Page, type Locator } from '@playwright/test';
+import { BasePage } from './BasePage';
+
+export class LoginPage extends BasePage {
+    readonly emailInput: Locator;
+    readonly passwordInput: Locator;
+    readonly signInButton: Locator;
+
+    constructor(page: Page) {
+        super(page);  // MUST call BasePage constructor
+        this.emailInput = page.getByLabel('Email');
+        this.passwordInput = page.getByLabel('Password');
+        this.signInButton = page.getByRole('button', { name: 'Sign In' });
+    }
+
+    async navigateToLogin() {
+        // Use BasePage's optimized navigateTo
+        await this.navigateTo('/login');
+    }
+
+    async login(email: string, password: string) {
+        // Use BasePage's fill and click methods
+        await this.fill(this.emailInput, email);
+        await this.fill(this.passwordInput, password);
+        await this.click(this.signInButton);
+    }
+
+    async verifyLoginSuccess() {
+        // Use BasePage's verifyURL
+        await this.verifyURL(/.*dashboard/, this.DEFAULT_TIMEOUT);
+    }
+}
+```
+
 **Reference:** AI_TEST_STANDARDS.md Section 2 for COM architecture
 
-### Step 3.4: Implement Tests (One Module at a Time)
+### Step 3.5: Implement Tests (One Module at a Time)
 
 **Module-by-Module Approach:**
 
