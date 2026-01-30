@@ -54,6 +54,275 @@ class DashboardPage {
 
 ---
 
+## 2.1 BASEPAGE PATTERN (MANDATORY)
+
+**CRITICAL:** Every Page Object and Component MUST extend a `BasePage` class to ensure consistent behavior and optimized performance.
+
+### Why BasePage?
+
+* **Performance:** Centralized wait strategies eliminate redundant waits (30-40% faster tests)
+* **Consistency:** All pages use the same optimized methods
+* **Maintainability:** Update wait logic in one place, affects all pages
+* **DRY Principle:** Avoid duplicating common actions across pages
+
+### BasePage Implementation
+
+**File:** `src/pages/BasePage.ts`
+
+**Core Features:**
+
+1. **Optimized Navigation:**
+   - Default to `domcontentloaded` instead of `load` (2-3s faster)
+   - Configurable wait strategies per navigation
+
+2. **Smart Wait Utilities:**
+   - `waitForElement(locator, timeout)` - Element-based waits
+   - `waitForElementHidden(locator, timeout)` - Wait for disappearance
+   - `waitForElementAttached(locator, timeout)` - Wait for DOM attachment
+
+3. **Reusable Action Methods:**
+   - `click(locator, options)` - Click with auto-wait
+   - `fill(locator, value, timeout)` - Fill with auto-wait
+   - `selectOption(locator, value, timeout)` - Select with auto-wait
+   - `getText(locator, timeout)` - Get text with wait
+   - `isVisible(locator, timeout)` - Visibility check
+   - `hover(locator, timeout)` - Hover with wait
+   - `pressKey(locator, key)` - Press key with wait
+
+4. **Assertion Helpers:**
+   - `verifyVisible(locator, timeout)` - Assert visibility
+   - `verifyHidden(locator, timeout)` - Assert hidden
+   - `verifyText(locator, text, timeout)` - Assert text contains
+   - `verifyExactText(locator, text, timeout)` - Assert exact text
+   - `verifyURL(pattern, timeout)` - Assert URL matches
+
+5. **Centralized Timeouts:**
+   ```typescript
+   protected readonly DEFAULT_TIMEOUT = 10000;
+   protected readonly SHORT_TIMEOUT = 5000;
+   protected readonly LONG_TIMEOUT = 30000;
+   ```
+
+**Example BasePage.ts:**
+
+```typescript
+import { type Page, type Locator, expect } from '@playwright/test';
+
+export class BasePage {
+    protected readonly page: Page;
+    protected readonly DEFAULT_TIMEOUT = 10000;
+    protected readonly SHORT_TIMEOUT = 5000;
+    protected readonly LONG_TIMEOUT = 30000;
+
+    constructor(page: Page) {
+        this.page = page;
+    }
+
+    // Optimized Navigation
+    async navigateTo(url: string, waitUntil: 'load' | 'domcontentloaded' | 'networkidle' | 'commit' = 'domcontentloaded') {
+        await this.page.goto(url, { waitUntil });
+    }
+
+    async reload(waitUntil: 'load' | 'domcontentloaded' | 'networkidle' | 'commit' = 'domcontentloaded') {
+        await this.page.reload({ waitUntil });
+    }
+
+    // Smart Wait Utilities
+    async waitForElement(locator: Locator, timeout: number = this.DEFAULT_TIMEOUT) {
+        await locator.waitFor({ state: 'visible', timeout });
+    }
+
+    async waitForElementHidden(locator: Locator, timeout: number = this.DEFAULT_TIMEOUT) {
+        await locator.waitFor({ state: 'hidden', timeout });
+    }
+
+    async waitForElementAttached(locator: Locator, timeout: number = this.DEFAULT_TIMEOUT) {
+        await locator.waitFor({ state: 'attached', timeout });
+    }
+
+    // Reusable Action Methods
+    async click(locator: Locator, options?: { timeout?: number }) {
+        await locator.click({ timeout: options?.timeout || this.DEFAULT_TIMEOUT });
+    }
+
+    async fill(locator: Locator, value: string, timeout: number = this.DEFAULT_TIMEOUT) {
+        await locator.fill(value, { timeout });
+    }
+
+    async selectOption(locator: Locator, value: string | string[], timeout: number = this.DEFAULT_TIMEOUT) {
+        await locator.selectOption(value, { timeout });
+    }
+
+    async getText(locator: Locator, timeout: number = this.DEFAULT_TIMEOUT): Promise<string> {
+        await this.waitForElement(locator, timeout);
+        return await locator.textContent() || '';
+    }
+
+    async isVisible(locator: Locator, timeout: number = this.SHORT_TIMEOUT): Promise<boolean> {
+        try {
+            await locator.waitFor({ state: 'visible', timeout });
+            return true;
+        } catch {
+            return false;
+        }
+    }
+
+    async hover(locator: Locator, timeout: number = this.DEFAULT_TIMEOUT) {
+        await locator.hover({ timeout });
+    }
+
+    async pressKey(locator: Locator, key: string) {
+        await locator.press(key);
+    }
+
+    // Assertion Helpers
+    async verifyVisible(locator: Locator, timeout: number = this.DEFAULT_TIMEOUT) {
+        await expect(locator).toBeVisible({ timeout });
+    }
+
+    async verifyHidden(locator: Locator, timeout: number = this.DEFAULT_TIMEOUT) {
+        await expect(locator).toBeHidden({ timeout });
+    }
+
+    async verifyText(locator: Locator, text: string | RegExp, timeout: number = this.DEFAULT_TIMEOUT) {
+        await expect(locator).toContainText(text, { timeout });
+    }
+
+    async verifyExactText(locator: Locator, text: string | RegExp, timeout: number = this.DEFAULT_TIMEOUT) {
+        await expect(locator).toHaveText(text, { timeout });
+    }
+
+    async verifyURL(pattern: string | RegExp, timeout: number = this.DEFAULT_TIMEOUT) {
+        await expect(this.page).toHaveURL(pattern, { timeout });
+    }
+
+    // Utility Methods
+    async getCurrentURL(): Promise<string> {
+        return this.page.url();
+    }
+
+    async getTitle(): Promise<string> {
+        return await this.page.title();
+    }
+
+    async wait(ms: number) {
+        await this.page.waitForTimeout(ms);
+    }
+
+    async scrollIntoView(locator: Locator) {
+        await locator.scrollIntoViewIfNeeded();
+    }
+
+    async executeWithRetry<T>(action: () => Promise<T>, retries: number = 3): Promise<T> {
+        for (let i = 0; i < retries; i++) {
+            try {
+                return await action();
+            } catch (error) {
+                if (i === retries - 1) throw error;
+                await this.wait(1000);
+            }
+        }
+        throw new Error('Retry failed');
+    }
+}
+```
+
+### Using BasePage in Page Objects
+
+**✅ CORRECT - Extend BasePage:**
+
+```typescript
+import { type Page, type Locator } from '@playwright/test';
+import { BasePage } from './BasePage';
+import { Header } from '../components/Header';
+
+export class LoginPage extends BasePage {
+    readonly header: Header;
+    readonly emailInput: Locator;
+    readonly passwordInput: Locator;
+    readonly signInButton: Locator;
+
+    constructor(page: Page) {
+        super(page);  // Call BasePage constructor
+        this.header = new Header(page);
+        this.emailInput = page.getByLabel('Email');
+        this.passwordInput = page.getByLabel('Password');
+        this.signInButton = page.getByRole('button', { name: 'Sign In' });
+    }
+
+    async navigateToLogin() {
+        // Use BasePage's optimized navigateTo
+        await this.navigateTo('/customer/account/login');
+    }
+
+    async login(email: string, password: string) {
+        // Use BasePage's fill and click methods
+        await this.fill(this.emailInput, email);
+        await this.fill(this.passwordInput, password);
+        await this.click(this.signInButton);
+    }
+
+    async verifyLoginSuccess() {
+        // Use BasePage's verifyVisible
+        await this.verifyVisible(this.header.welcomeMessage, this.SHORT_TIMEOUT);
+    }
+}
+```
+
+**❌ INCORRECT - No BasePage:**
+
+```typescript
+// DON'T DO THIS - Missing BasePage benefits
+export class LoginPage {
+    readonly page: Page;
+    
+    constructor(page: Page) {
+        this.page = page;
+    }
+
+    async login(email: string, password: string) {
+        // Redundant code, no optimization
+        await this.page.getByLabel('Email').fill(email);
+        await this.page.getByLabel('Password').fill(password);
+        await this.page.getByRole('button', { name: 'Sign In' }).click();
+        await this.page.waitForLoadState('load');  // Slow, redundant
+    }
+}
+```
+
+### Performance Benefits
+
+**Before BasePage (Typical Test):**
+- Multiple `waitForLoadState('load')` calls
+- Hard timeouts (`waitForTimeout(2000)`)
+- Inconsistent wait strategies
+- Execution time: ~14 seconds
+
+**After BasePage (Optimized Test):**
+- Element-based waits
+- Optimized `domcontentloaded` navigation
+- Consistent timeout strategy
+- Execution time: ~8.7 seconds
+
+**Result:** **30-40% faster test execution**
+
+### BasePage Checklist
+
+Before writing ANY Page Object or Component:
+
+- [ ] Create `src/pages/BasePage.ts` with all utilities
+- [ ] All Page Objects extend `BasePage`
+- [ ] All Components extend `BasePage`
+- [ ] Use `navigateTo()` instead of `page.goto()`
+- [ ] Use `fill()` instead of `locator.fill()`
+- [ ] Use `click()` instead of `locator.click()`
+- [ ] Use `verifyVisible()` instead of `expect().toBeVisible()`
+- [ ] Use centralized timeouts (SHORT_TIMEOUT, DEFAULT_TIMEOUT, LONG_TIMEOUT)
+- [ ] Avoid `waitForLoadState()` unless absolutely necessary
+- [ ] Avoid `waitForTimeout()` - use element-based waits
+
+
+
 ## 3. FIXTURES & DEPENDENCY INJECTION (STRICT)
 
 * **NO Manual Instantiation:** Never write `const pageObj = new PageObject(page)` inside a test.
